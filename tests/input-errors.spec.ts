@@ -46,6 +46,7 @@ test('renderer fallback retry remains clickable inside food input', async ({ pag
   await expect(page.getByRole('button', { name: '重试画面' })).toBeVisible();
   await page.getByRole('button', { name: '重试画面' }).click();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
+  await expect(page.getByTestId('experience')).toHaveAttribute('data-hit-ready', 'true');
   const food = page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' });
   await food.focus();
   await page.keyboard.press('Enter');

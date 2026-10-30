@@ -22,29 +22,35 @@ export default function App() {
   const [state, dispatch] = useReducer(sequenceReducer, undefined, createSequenceState);
   const [motion] = useState(createMotion);
   const hit = useRef<HitTest | null>(null);
-  const setHit = useCallback((next: HitTest | null) => { hit.current = next; }, []);
+  const [hitReady, setHitReady] = useState(false);
+  const setHit = useCallback((next: HitTest | null, owner?: HitTest) => {
+    if (owner && hit.current !== owner) return;
+    hit.current = next;
+    setHitReady(Boolean(next));
+  }, []);
   const reduced = useReducedMotion();
   const [contextLost, setContextLost] = useState(false);
   useEffect(() => { void store.load(0); }, [store]);
   useEffect(() => {
     entries.forEach((entry, stage) => { if (entry.status === 'ready') dispatch({ type: 'READY', stage, run: state.run }); });
   }, [entries, state.run]);
-  const bite = () => { if (state.phase === 'idle' && !contextLost && hit.current) { impulse(motion); dispatch({ type: 'BITE' }); } };
-  const input = useFoodInput(motion, hit, state.phase === 'idle' && !contextLost, bite);
+  const bite = () => { if (state.phase === 'idle' && !contextLost && hitReady && hit.current) { impulse(motion); dispatch({ type: 'BITE' }); } };
+  const playable = state.phase === 'idle' && !contextLost && hitReady;
+  const input = useFoodInput(motion, hit, playable, bite);
   const current = entries[state.stage]!, base = entries[0]!;
   const needed = state.phase === 'loading' ? 0 : state.phase === 'waiting' ? state.stage + 1 : -1;
   const error = needed >= 0 && entries[needed]?.status === 'error';
   const status = contextLost ? '三维画面已中断，请重新加载画面。' : error ? '汉堡加载失败，重试后继续。' : state.phase === 'loading' ? '汉堡正在上桌…' : state.phase === 'waiting' ? '下一口正在准备…' : state.phase === 'finished' ? '吃光了。刚刚好。' : state.phase === 'final' || state.phase === 'eating' ? '这一口，满足。' : '轻点吃一口，拖动转一转';
-  return <main className="experience" data-testid="experience" data-stage={state.stage} data-bites={state.bites} data-phase={state.phase}>
+  return <main className="experience" data-testid="experience" data-stage={state.stage} data-bites={state.bites} data-phase={state.phase} data-hit-ready={hitReady}>
     <header><h1>嚼光<span className="brand-dot">。</span></h1></header>
     <div className="stage">
       <div className="plate" aria-hidden="true" />
-      <div className="food-input" role="button" tabIndex={0} aria-label="汉堡，轻点吃一口，拖动旋转" aria-disabled={state.phase !== 'idle' || contextLost} {...input}
-        onContextMenu={event => event.preventDefault()}>
-        <SceneBoundary>
-          {!contextLost && state.phase !== 'finished' && current.status === 'ready' && base.status === 'ready' && <Scene asset={current.asset} base={base.asset} state={state} motion={motion} reduced={reduced} dispatch={dispatch} setHit={setHit} onContextLost={() => setContextLost(true)} />}
-        </SceneBoundary>
-      </div>
+      <SceneBoundary>
+        <div className="food-input" role="button" tabIndex={0} aria-label="汉堡，轻点吃一口，拖动旋转" aria-disabled={!playable} data-hit-ready={hitReady} {...input}
+          onContextMenu={event => event.preventDefault()}>
+          {!contextLost && current.status === 'ready' && base.status === 'ready' && <Scene asset={current.asset} base={base.asset} state={state} motion={motion} reduced={reduced} dispatch={dispatch} setHit={setHit} onContextLost={() => { setContextLost(true); setHit(null); }} />}
+        </div>
+      </SceneBoundary>
     </div>
     <footer>
       <Progress stage={state.stage} bites={state.bites} />

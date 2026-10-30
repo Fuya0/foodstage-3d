@@ -10,7 +10,7 @@ export type HitTest = (x: number, y: number) => boolean;
 interface Props {
   asset: ModelAsset; base: ModelAsset; state: SequenceState; motion: Motion;
   reduced: boolean; dispatch: (event: SequenceEvent) => void;
-  setHit: (hit: HitTest | null) => void;
+  setHit: (hit: HitTest | null, owner?: HitTest) => void;
   onContextLost: () => void;
 }
 function Food({ asset, base, state, motion, reduced, dispatch, setHit }: Props) {
@@ -18,6 +18,7 @@ function Food({ asset, base, state, motion, reduced, dispatch, setHit }: Props) 
   const { camera, size, gl } = useThree();
   const scene = useMemo(() => asset.scene.clone(true), [asset]);
   const timeline = useRef({ key: '', elapsed: 0, done: false });
+  const hitRef = useRef<HitTest | null>(null);
   useEffect(() => {
     const cam = camera as OrthographicCamera;
     cam.zoom = Math.min(size.width / (base.size.x * 1.63), size.height / (base.size.y * 1.8));
@@ -25,13 +26,17 @@ function Food({ asset, base, state, motion, reduced, dispatch, setHit }: Props) 
   }, [camera, size, base]);
   useEffect(() => {
     const ray = new Raycaster(), point = new Vector2();
-    setHit((x, y) => {
+    const hitTest: HitTest = (x, y) => {
       const rect = gl.domElement.getBoundingClientRect();
       point.set((x - rect.left) / rect.width * 2 - 1, -(y - rect.top) / rect.height * 2 + 1);
       ray.setFromCamera(point, camera);
       return !!rotation.current && ray.intersectObject(rotation.current, true).length > 0;
-    });
-    return () => setHit(null);
+    };
+    hitRef.current = hitTest;
+    setHit(hitTest);
+    return () => {
+      if (hitRef.current === hitTest) hitRef.current = null;
+    };
   }, [camera, gl, setHit]);
   useFrame((_, dt) => {
     stepMotion(motion, dt);
@@ -48,7 +53,7 @@ function Food({ asset, base, state, motion, reduced, dispatch, setHit }: Props) 
     const progress = Math.min(1, time.elapsed / duration);
     exit.current.position.y = state.phase === 'eating' ? -progress * 0.1 : 0;
     // Composite the canvas instead of changing any original material.
-    gl.domElement.style.opacity = state.phase === 'eating' ? String(1 - progress) : '1';
+    gl.domElement.style.opacity = state.phase === 'eating' ? String(1 - progress) : state.phase === 'finished' ? '0' : '1';
     const scale = state.phase === 'final' ? 1 - Math.sin(progress * Math.PI) * (reduced ? 0 : 0.06) : 1;
     exit.current.scale.setScalar(scale);
     if ((state.phase === 'final' || state.phase === 'eating') && progress === 1 && !time.done) {

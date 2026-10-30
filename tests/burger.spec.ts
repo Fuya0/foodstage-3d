@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 async function idle(page: Page, stage: number) {
   await expect(page.getByTestId('experience')).toHaveAttribute('data-stage', String(stage));
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
+  await expect(page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' })).toHaveAttribute('data-hit-ready', 'true');
 }
 async function bites(page: Page, count: number) {
   const area = page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' });
