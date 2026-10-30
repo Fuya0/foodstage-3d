@@ -1,0 +1,32 @@
+:root { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; color: #333A32; background: #F6F5F3; font-synthesis: none; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button { font: inherit; cursor: pointer; border: 1px solid #4D6045; border-radius: 100px; padding: 12px 30px; color: #FEFDFC; background: #4D6045; letter-spacing: .12em; }
+button:hover { background: #3c4d35; }
+button:focus-visible, .food-input:focus-visible { outline: 2px solid #4D6045; outline-offset: 6px; }
+.experience { min-height: 640px; height: 100svh; display: grid; grid-template-rows: 100px minmax(0, 1fr) 180px; overflow: hidden; }
+header { padding: 36px 48px; z-index: 1; pointer-events: none; }
+h1 { margin: 0; font-family: 'Songti SC', SimSun, serif; font-weight: 400; font-size: 27px; letter-spacing: .16em; }
+.brand-dot { color: #4D6045; margin-left: -.2em; }
+.stage { position: relative; width: min(100%, 1000px); margin-inline: auto; }
+.plate { position: absolute; width: 65%; height: 27%; left: 17.5%; top: 61%; border-radius: 50%; background: #FEFDFC; box-shadow: inset 0 2px 5px #ddd9d14d, inset 0 -6px 12px #ffffff, 0 16px 30px #4b44310a; }
+.plate::after { content: ''; position: absolute; inset: 12% 7%; border-radius: 50%; box-shadow: inset 0 1px 7px #c9c4b333; }
+.food-input { position: absolute; inset: 0; border-radius: 45%; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; cursor: grab; }
+.food-input:active { cursor: grabbing; }
+.food-input[aria-disabled=true] { cursor: default; }
+footer { display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 1; }
+.progress { display: flex; gap: 14px; color: #4D6045; }
+.ring-track, .ring-fill { fill: none; stroke-width: 1.5; }
+.ring-track { stroke: #DEDCD5; }
+.ring-fill { stroke: currentColor; transition: stroke-dasharray 100ms ease-out; }
+footer p { margin: 3px 18px 0; font-size: 14px; letter-spacing: .12em; line-height: 1.8; color: #61675c; text-align: center; }
+.keyboard-hint { font-size: 11px; letter-spacing: .08em; color: #767A70; }
+.render-error { position: absolute; inset: 25%; display: flex; flex-direction: column; justify-content: center; gap: 20px; text-align: center; font-size: 14px; line-height: 1.8; }
+@media (max-width: 600px) {
+  .experience { min-height: 560px; grid-template-rows: 85px minmax(0, 1fr) 170px; }
+  header { padding: 28px; }
+  h1 { font-size: 25px; }
+  .plate { width: 88%; left: 6%; height: 23%; top: 60%; }
+  .keyboard-hint { visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) { .ring-fill { transition: none; } }
