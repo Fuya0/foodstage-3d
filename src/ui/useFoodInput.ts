@@ -9,6 +9,7 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
   function clear() { active.current = null; motion.dragging = false; }
   return {
     onPointerDown(event: PointerEvent<HTMLDivElement>) {
+      if (event.target instanceof Element && event.target.closest('button, a, input, [data-no-drag]')) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       pointers.current.add(event.pointerId);
       // Capture even a miss so an outside release always clears tracked pointers.

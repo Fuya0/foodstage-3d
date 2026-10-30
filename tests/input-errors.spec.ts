@@ -30,6 +30,34 @@ test('first parser failure retries and gesture cancellation never bites', async 
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
 });
 
+test('renderer fallback retry remains clickable inside food input', async ({ page }) => {
+  await page.addInitScript(() => {
+    let failOnce = true;
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: any[]) {
+      if (failOnce && (type === 'webgl2' || type === 'webgl' || type === 'experimental-webgl')) {
+        failOnce = false;
+        throw new Error('forced renderer failure');
+      }
+      return getContext.call(this, type, ...args);
+    };
+  });
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: '重试画面' })).toBeVisible();
+  await page.getByRole('button', { name: '重试画面' }).click();
+  await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
+  const food = page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' });
+  await food.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
+  const box = (await food.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 20, { steps: 4 });
+  await page.mouse.up();
+  await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
+});
+
 test('WebGL context loss provides a recovery action', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
