@@ -3,7 +3,7 @@ import { beginGesture, moveGesture, endGesture, isTap, type Gesture } from '../c
 import type { Motion } from '../scene/motion';
 import type { HitTest } from '../scene/Scene';
 
-export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null>, playable: boolean, bite: () => void) {
+export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null>, playable: boolean, bite: () => void, sensitivity = 1) {
   const active = useRef<{ id: number; gesture: Gesture; x: number; y: number; time: number } | null>(null);
   const pointers = useRef(new Set<number>());
   function clear() { active.current = null; motion.dragging = false; }
@@ -26,8 +26,8 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
       pointer.gesture = moveGesture(pointer.gesture, event.clientX, event.clientY);
       const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
       const dt = Math.max(0.008, (event.timeStamp - pointer.time) / 1000);
-      motion.x += dy * 0.009; motion.y += dx * 0.009;
-      motion.vx = dy * 0.009 / dt; motion.vy = dx * 0.009 / dt;
+      motion.x += dy * 0.009 * sensitivity; motion.y += dx * 0.009 * sensitivity;
+      motion.vx = dy * 0.009 * sensitivity / dt; motion.vy = dx * 0.009 * sensitivity / dt;
       pointer.x = event.clientX; pointer.y = event.clientY; pointer.time = event.timeStamp;
     },
     onPointerUp(event: PointerEvent<HTMLDivElement>) {

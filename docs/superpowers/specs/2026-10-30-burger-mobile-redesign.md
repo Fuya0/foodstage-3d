@@ -1,0 +1,11 @@
+# Burger mobile redesign
+
+Approved direction: dark green food photography surface, centered burger, restrained plate highlight, minimal brand/stage/progress/action. Original GLBs remain byte-identical source files. Generate separate mobile GLBs and measure real size/triangle/texture results rather than asserting projected savings. Preserve stage-0-first and sequential later preload with retry.
+
+Visual tokens: ink #17211D, evergreen #244338, plate glaze #D9D2C3, bone #F1EEE5, citrus #D8E17A, toasted #BD8151. Use Songti SC/SimSun for the small brand only, PingFang SC/Microsoft YaHei for functional UI. Stage occupies the viewport with centered model; top brand and stage count, bottom real bite ticks and recovery/replay controls. No ornamental cards or marketing hero. One meaningful plate highlight arc. Mobile safe-area and small-height responsive.
+
+Interaction: every valid tap gives only a horizontal shake; first seven update bite count immediately. Eighth shake lasts roughly 220ms, then swaps directly to the next already-loaded model (or keeps current model and complete bites until next is ready, with retry). No scale, vertical translation, opacity crossfade, or staged eating phase. Preserve drag angle and inertia across swaps. Last stage eighth shake finishes on empty plate with replay. Reduced-motion completes rapidly, not stuck. Stale completion events rejected by run/transition tokens. Keyboard and pointer semantics retained.
+
+Asset pipeline: optimize four independently, preserving public/models/burger-*.glb as source. Generate public/models-mobile/burger-*.glb from reproducible script, lower texture resolution and simplify geometry only as justified by actual measurements. Prefer compression widely supported by GLTFLoader with explicit decoder configuration. Manifest points to optimized assets; first stage starts first, others sequential. Report before/after, triangle counts and texture dimensions. Do not claim subjective visual quality without image inspection; check actual canvas pixels/browser and ask user for visual judgement.
+
+Acceptance: unit and browser tests cover no vertical/opacity exit, 32 bites, wait/retry, replay, mobile layout and load of optimized files. Typecheck, build, browser suite and HTTP response verified on active dev server. Source GLB hashes unchanged.

@@ -4,11 +4,12 @@ test('first parser failure retries and gesture cancellation never bites', async 
   let corrupt = true;
   await page.route('**/burger-0.glb', route => corrupt ? route.fulfill({ status: 200, body: 'invalid GLB' }) : route.continue());
   await page.goto('/');
+  await page.getByRole('button', { name: '开始品尝' }).click();
   await expect(page.getByRole('button', { name: '重试加载' })).toBeVisible();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'loading');
   corrupt = false; await page.getByRole('button', { name: '重试加载' }).click();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
-  const food = page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' });
+  const food = page.getByRole('button', { name: '经典汉堡' });
   const box = (await food.boundingBox())!;
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   // Blank canvas is not edible; outside release cannot poison the next gesture.
@@ -26,8 +27,10 @@ test('first parser failure retries and gesture cancellation never bites', async 
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [touch] });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '0');
+  await expect(food).toHaveAttribute('aria-disabled', 'false');
   await food.focus(); await page.keyboard.press('Enter');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
+  await expect(food).toHaveAttribute('aria-disabled', 'false');
 });
 
 test('renderer fallback retry remains clickable inside food input', async ({ page }) => {
@@ -43,14 +46,17 @@ test('renderer fallback retry remains clickable inside food input', async ({ pag
     };
   });
   await page.goto('/');
+  await page.getByRole('button', { name: '开始品尝' }).click();
   await expect(page.getByRole('button', { name: '重试画面' })).toBeVisible();
   await page.getByRole('button', { name: '重试画面' }).click();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-hit-ready', 'true');
-  const food = page.getByRole('button', { name: '汉堡，轻点吃一口，拖动旋转' });
+  const food = page.getByRole('button', { name: '经典汉堡' });
+  await expect(food).toHaveAttribute('aria-disabled', 'false');
   await food.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
+  await expect(food).toHaveAttribute('aria-disabled', 'false');
   const box = (await food.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
@@ -61,6 +67,7 @@ test('renderer fallback retry remains clickable inside food input', async ({ pag
 
 test('WebGL context loss provides a recovery action', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: '开始品尝' }).click();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
   await page.locator('canvas').evaluate(canvas => canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
   await expect(page.getByRole('button', { name: '重试画面' })).toBeVisible();

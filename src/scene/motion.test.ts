@@ -20,12 +20,13 @@ describe('motion behavior', () => {
     stepMotion(motion, 0.1); expect(motion.x).toBe(0);
     Object.assign(motion, { dragging: false }); stepMotion(motion, 0.1); expect(motion.x).toBeGreaterThan(0);
   });
-  it('adds shake impulses, caps rapid input and stops after 250ms', () => {
+  it('adds subtle shake and signals crumb emission on each bite', () => {
     const motion = createMotion();
-    impulse(motion); const first = motion.shake;
-    impulse(motion); expect(motion.shake).toBeGreaterThan(first);
-    for (let i = 0; i < 100; i++) impulse(motion);
-    expect(motion.shake).toBeLessThanOrEqual(1);
+    impulse(motion); expect(motion.shake).toBeLessThan(0.2); expect(motion.crumbPulse).toBe(1);
+    impulse(motion, 0.95); expect(motion.shake).toBeLessThanOrEqual(1); expect(motion.crumbPulse).toBe(2);
+  });
+  it('stops shake after 250ms', () => {
+    const motion = createMotion(); impulse(motion);
     stepMotion(motion, 0.2); expect(motion.shake).toBeGreaterThan(0);
     stepMotion(motion, 0.051); expect(motion.shake).toBe(0);
   });

@@ -9,7 +9,9 @@
     "test:browser": "playwright test",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "optimize:models": "node scripts/optimize-models.mjs",
+    "optimize:sample": "node scripts/optimize-models.mjs --sample"
   },
   "dependencies": {
     "@react-three/fiber": "^9.4.0",

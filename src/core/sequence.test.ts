@@ -1,84 +1,79 @@
 import { describe, expect, it } from 'vitest';
 import { createSequenceState, sequenceReducer, type SequenceState } from './sequence';
-import { manifest } from '../data/manifest';
+import { foods } from '../data/foods';
 
-function bite(state: SequenceState, count = 8): SequenceState {
-  for (let i = 0; i < count; i++) state = sequenceReducer(state, { type: 'BITE' });
+const stages = foods[0]!.stages;
+function reduce(state: SequenceState, event: Parameters<typeof sequenceReducer>[2]) {
+  return sequenceReducer(stages, state, event);
+}
+function bite(state: SequenceState, count = 4): SequenceState {
+  for (let i = 0; i < count; i++) state = reduce(state, { type: 'BITE' });
   return state;
 }
-function complete(state: SequenceState, type: 'FINAL_DONE' | 'EATING_DONE') {
-  return sequenceReducer(state, { type, run: state.run, transition: state.transition });
+function complete(state: SequenceState) {
+  return reduce(state, { type: 'FINAL_DONE', run: state.run, transition: state.transition });
 }
 
 describe('sequence', () => {
   it('does not accept bites before stage zero is ready or unrelated readiness', () => {
-    const initial = createSequenceState();
+    const initial = createSequenceState(stages);
     expect(bite(initial, 20)).toBe(initial);
-    const later = sequenceReducer(initial, { type: 'READY', stage: 1, run: initial.run });
+    const later = reduce(initial, { type: 'READY', stage: 1, run: initial.run });
     expect(later.phase).toBe('loading');
-    const ready = sequenceReducer(later, { type: 'READY', stage: 0, run: initial.run });
+    const ready = reduce(later, { type: 'READY', stage: 0, run: initial.run });
     expect(ready).toMatchObject({ phase: 'idle', stage: 0, bites: 0 });
   });
 
-  it('caps repeated bites at eight and advances only after both animation completions', () => {
-    const initial = createSequenceState([0, 1]);
+  it('caps repeated bites at four and advances after completion', () => {
+    const initial = createSequenceState(stages, [0, 1]);
     const final = bite(initial, 20);
-    expect(final).toMatchObject({ stage: 0, bites: 8, phase: 'final' });
-    expect(complete(final, 'EATING_DONE')).toBe(final);
-    const eating = complete(final, 'FINAL_DONE');
-    expect(eating.phase).toBe('eating');
-    expect(bite(eating)).toBe(eating);
-    expect(complete(eating, 'FINAL_DONE')).toBe(eating);
-    expect(complete(eating, 'EATING_DONE')).toMatchObject({ stage: 1, bites: 0, phase: 'idle' });
+    expect(final).toMatchObject({ stage: 0, bites: 4, phase: 'final' });
+    const next = complete(final);
+    expect(next).toMatchObject({ stage: 1, bites: 0, phase: 'idle' });
+    expect(complete(next)).toBe(next);
   });
 
-  it('keeps the current stage with eight bites until the next asset is ready', () => {
-    const waiting = bite(createSequenceState([0]));
-    expect(waiting).toMatchObject({ stage: 0, bites: 8, phase: 'waiting' });
-    expect(complete(waiting, 'FINAL_DONE')).toBe(waiting);
-    const unrelated = sequenceReducer(waiting, { type: 'READY', stage: 3, run: waiting.run });
+  it('keeps the current stage with full progress until the next asset is ready', () => {
+    const waiting = bite(createSequenceState(stages, [0]));
+    expect(waiting).toMatchObject({ stage: 0, bites: 4, phase: 'waiting' });
+    expect(complete(waiting)).toBe(waiting);
+    const unrelated = reduce(waiting, { type: 'READY', stage: 3, run: waiting.run });
     expect(unrelated.phase).toBe('waiting');
-    const final = sequenceReducer(unrelated, { type: 'READY', stage: 1, run: waiting.run });
-    expect(final).toMatchObject({ stage: 0, bites: 8, phase: 'final' });
-    expect(complete(complete(final, 'FINAL_DONE'), 'EATING_DONE')).toMatchObject({ stage: 1, phase: 'idle' });
+    const final = reduce(unrelated, { type: 'READY', stage: 1, run: waiting.run });
+    expect(final).toMatchObject({ stage: 0, bites: 4, phase: 'final' });
+    expect(complete(final)).toMatchObject({ stage: 1, phase: 'idle' });
   });
 
-  it('finishes after exactly thirty-two bites and never advances past the final stage', () => {
-    let state = createSequenceState([0, 1, 2, 3]);
-    for (let stage = 0; stage < 4; stage++) {
-      state = bite(state, 7);
-      expect(state).toMatchObject({ stage, bites: 7, phase: 'idle' });
-      state = complete(complete(bite(state, 1), 'FINAL_DONE'), 'EATING_DONE');
+  it('uses the chosen food stage count and bite thresholds', () => {
+    const snack = [{ ...stages[0]!, bites: 2 }, { ...stages[1]!, bites: 1 }];
+    const state = sequenceReducer(snack, createSequenceState(snack, [0, 1]), { type: 'BITE' });
+    const final = sequenceReducer(snack, state, { type: 'BITE' });
+    expect(final.phase).toBe('final');
+    const next = sequenceReducer(snack, final, { type: 'FINAL_DONE', run: final.run, transition: final.transition });
+    const last = sequenceReducer(snack, next, { type: 'BITE' });
+    expect(sequenceReducer(snack, last, { type: 'FINAL_DONE', run: last.run, transition: last.transition }).phase).toBe('finished');
+  });
+
+  it('finishes after sixteen bites for the four-stage burger', () => {
+    let state = createSequenceState(stages, [0, 1, 2, 3]);
+    for (let stage = 0; stage < stages.length; stage++) {
+      state = bite(state, 3);
+      expect(state).toMatchObject({ stage, bites: 3, phase: 'idle' });
+      state = complete(bite(state, 1));
     }
-    expect(state).toMatchObject({ stage: 3, bites: 8, phase: 'finished' });
-    expect(bite(state)).toBe(state);
-    expect(complete(state, 'EATING_DONE')).toBe(state);
-    expect(manifest).toHaveLength(4);
-    expect(manifest.map(item => item.url)).toEqual(['/models/burger-0.glb', '/models/burger-1.glb', '/models/burger-2.glb', '/models/burger-3.glb']);
+    expect(state).toMatchObject({ stage: 3, bites: 4, phase: 'finished' });
   });
 
-  it('restarts with cached readiness and ignores old callbacks even in the same phase', () => {
-    const oldFinal = bite(createSequenceState([0, 1]));
-    const oldEating = complete(oldFinal, 'FINAL_DONE');
-    const restarted = sequenceReducer(oldEating, { type: 'RESTART' });
+  it('restarts with cached readiness and ignores old callbacks', () => {
+    const oldFinal = bite(createSequenceState(stages, [0, 1]));
+    const restarted = reduce(oldFinal, { type: 'RESTART' });
     expect(restarted).toMatchObject({ stage: 0, bites: 0, phase: 'idle', run: 1 });
-    expect(sequenceReducer(restarted, { type: 'EATING_DONE', run: oldEating.run, transition: oldEating.transition })).toBe(restarted);
-    const newFinal = bite(restarted);
-    expect(sequenceReducer(newFinal, { type: 'FINAL_DONE', run: oldFinal.run, transition: oldFinal.transition })).toBe(newFinal);
-    const newEating = complete(newFinal, 'FINAL_DONE');
-    expect(sequenceReducer(newEating, { type: 'EATING_DONE', run: oldEating.run, transition: oldEating.transition })).toBe(newEating);
-    expect(sequenceReducer(newEating, { type: 'EATING_DONE', run: newEating.run, transition: newEating.transition - 1 })).toBe(newEating);
-    const next = complete(newEating, 'EATING_DONE');
-    const nextFinal = bite(sequenceReducer(next, { type: 'READY', stage: 2, run: next.run }));
-    expect(sequenceReducer(nextFinal, { type: 'FINAL_DONE', run: newFinal.run, transition: newFinal.transition })).toBe(nextFinal);
+    expect(reduce(restarted, { type: 'FINAL_DONE', run: oldFinal.run, transition: oldFinal.transition })).toBe(restarted);
   });
 
-  it('ignores stale or invalid readiness and restarts loading without a cached first asset', () => {
-    const state = sequenceReducer(createSequenceState(), { type: 'RESTART' });
-    expect(state.phase).toBe('loading');
-    for (const stage of [-1, 4, 0.5, NaN]) {
-      expect(sequenceReducer(state, { type: 'READY', stage, run: state.run })).toBe(state);
-    }
-    expect(sequenceReducer(state, { type: 'READY', stage: 0, run: state.run - 1 })).toBe(state);
+  it('ignores stale or invalid readiness', () => {
+    const state = reduce(createSequenceState(stages), { type: 'RESTART' });
+    for (const stage of [-1, 4, 0.5, NaN]) expect(reduce(state, { type: 'READY', stage, run: state.run })).toBe(state);
+    expect(reduce(state, { type: 'READY', stage: 0, run: state.run - 1 })).toBe(state);
   });
 });

@@ -1,7 +1,8 @@
-export interface Motion { x: number; y: number; vx: number; vy: number; shake: number; age: number; dragging: boolean }
-export function createMotion(): Motion { return { x: 0, y: 0, vx: 0, vy: 0, shake: 0, age: 0, dragging: false }; }
-export function impulse(motion: Motion): void {
-  motion.shake = Math.min(1, motion.shake + 0.36);
+export interface Motion { x: number; y: number; vx: number; vy: number; shake: number; age: number; dragging: boolean; crumbPulse: number }
+export function createMotion(): Motion { return { x: 0, y: 0, vx: 0, vy: 0, shake: 0, age: 0, dragging: false, crumbPulse: 0 }; }
+export function impulse(motion: Motion, strength = 0.08): void {
+  motion.shake = Math.min(1, motion.shake + strength);
+  motion.crumbPulse += 1;
   motion.age = 0;
 }
 /** Exact exponential integration makes displacement independent of refresh rate. */
