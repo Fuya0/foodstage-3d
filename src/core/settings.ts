@@ -16,7 +16,9 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
 
 export const defaults = DEFAULT_SETTINGS;
 
-const SETTINGS_KEY = 'jiaoguang-settings';
+const SETTINGS_KEY = 'foodstage-3d-settings';
+// Read-only compatibility preserves existing mute and accessibility preferences.
+const LEGACY_SETTINGS_KEY = 'jiaoguang-settings';
 
 function readStorage(storage?: Pick<Storage, 'getItem'>): Pick<Storage, 'getItem'> | undefined {
   if (storage) return storage;
@@ -53,7 +55,7 @@ export function sanitizeSettings(value: unknown): Settings {
 export function readSettings(storage?: Pick<Storage, 'getItem'>): Settings {
   try {
     const source = readStorage(storage);
-    const raw = source?.getItem(SETTINGS_KEY);
+    const raw = source?.getItem(SETTINGS_KEY) ?? source?.getItem(LEGACY_SETTINGS_KEY);
     return raw ? sanitizeSettings(JSON.parse(raw)) : sanitizeSettings(DEFAULT_SETTINGS);
   } catch {
     return sanitizeSettings(DEFAULT_SETTINGS);

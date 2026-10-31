@@ -1,4 +1,4 @@
-# 嚼光：单汉堡 H5 首版设计
+# 食刻：单汉堡 H5 首版设计
 
 状态：用户于 2026-10-30 确认，授权在 D:/project 创建新仓库并开发。
 来源：https://ucnsm1bi3stq.feishu.cn/wiki/OmM0wnSEziebmjkXv8bcPo45nJd （读取 revision 11）。本说明覆盖旧设计中与首版范围冲突的要求。

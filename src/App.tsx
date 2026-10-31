@@ -26,7 +26,7 @@ function useSystemReducedMotion() {
 }
 
 function Brand() {
-  return <div className="brand"><svg className="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 14c0-6 4.5-10 10-10s10 4 10 10H6ZM6 23h20c0 3-4 5-10 5S6 26 6 23Z" fill="currentColor"/><path d="m6 18 5 2 5-2 5 2 5-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg><h1>嚼光</h1></div>;
+  return <div className="brand"><svg className="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 14c0-6 4.5-10 10-10s10 4 10 10H6ZM6 23h20c0 3-4 5-10 5S6 26 6 23Z" fill="currentColor"/><path d="m6 18 5 2 5-2 5 2 5-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg><h1>食刻</h1></div>;
 }
 
 function AppHeader({ settings, onSettingsChange, onBack }: { settings: Settings; onSettingsChange: (settings: Settings) => void; onBack?: () => void }) {

@@ -1,5 +1,7 @@
 {
-  "name": "jiaoguang-burger-viewer",
+  "name": "foodstage-3d",
+  "description": "食刻（FoodStage 3D）——可以转着看、点着吃的 3D 食物小游戏",
+  "repository": { "type": "git", "url": "https://github.com/Fuya0/foodstage-3d.git" },
   "version": "0.1.0",
   "private": true,
   "type": "module",

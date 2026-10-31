@@ -28,7 +28,7 @@ test('real model, drag isolation, four-bite transition and 16-bite replay', asyn
   await page.getByRole('button', { name: '开始品尝' }).click();
   await loaded; await idle(page, 0);
   await expect(page.locator('canvas')).toBeVisible();
-  await expect(page.locator('h1')).toHaveText('嚼光');
+  await expect(page.locator('h1')).toHaveText('食刻');
   await expect(page.locator('.progress')).toBeVisible();
   await expect(page.locator('.keyboard-hint')).toHaveCount(0);
   await expect(page.locator('.experience')).toHaveCSS('background-color', 'rgb(250, 248, 241)');
