@@ -9,7 +9,7 @@ describe('foods', () => {
     expect(burger!.stages).toHaveLength(4);
     expect(new Set(burger!.stages.map(stage => stage.url)).size).toBe(4);
     expect(burger!.stages.every(stage => stage.bites === 4)).toBe(true);
-    expect(burger!.cover).toBe('/foods/classic-burger.svg');
+    expect(burger!.cover).toBe('/foods/classic-burger.webp');
   });
 
   it('resolves foods by stable ID and never joins food stages', async () => {
