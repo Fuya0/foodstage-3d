@@ -34,7 +34,7 @@ strawberry-cake/
 ## 接入时我会处理的内容
 
 1. 检查四个阶段是否完整、有贴图、尺寸和朝向一致。
-2. 保留原始资产；用 `scripts/optimize-models.mjs --food <id>` 生成手机副本。该脚本按现有命名约定读取 `public/models/<id>-0.glb` 等文件，写入 `public/models-mobile/`；压缩参数与操作记录见 [模型优化说明](model-optimization.md)。
+2. 保留原始资产；用 `scripts/optimize-models.mjs --food <id>` 生成手机副本。该脚本按现有命名约定读取 `public/models/<id>-0.glb` 等文件，写入 `public/models-mobile/`；具体参数见 README。
 3. 在 `src/data/foods.ts` 注册名称、描述、封面、各阶段路径、每阶段口数和位置/缩放/朝向校准。
 4. 调整每阶段屏幕尺寸与过渡；为食物检查灯光和材质。当前运行时会对标准 PBR 食品材质温和校色并限制过低的粗糙度，新资产会按实际效果复核。
 5. 检查手机布局、直接点击、拖动旋转、完整吃完、重玩与加载失败重试。
