@@ -25,13 +25,14 @@ test('real model, drag isolation, four-bite transition and 16-bite replay', asyn
   page.on('console', message => { if (message.type() === 'error') failures.push(message.text()); });
   const loaded = page.waitForResponse(response => response.url().includes('/models-mobile/burger-0.glb') && response.ok());
   await page.goto('/');
+  await page.getByRole('button', { name: '翻开菜单' }).click();
   await page.getByRole('button', { name: '开始品尝' }).click();
   await loaded; await idle(page, 0);
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('h1')).toHaveText('食刻');
   await expect(page.locator('.progress')).toBeVisible();
   await expect(page.locator('.keyboard-hint')).toHaveCount(0);
-  await expect(page.locator('.experience')).toHaveCSS('background-color', 'rgb(250, 248, 241)');
+  await expect(page.locator('.experience')).toHaveCSS('background-color', 'rgb(246, 236, 220)');
   await page.screenshot({ path: 'docs/screenshots/desktop-initial.png' });
   await page.screenshot({ path: 'test-results/stage-0.png' });
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/stage-1.png', omitBackground: true });
@@ -71,6 +72,7 @@ test('failed next asset retains full progress and model until retry succeeds', a
   let fail = true;
   await page.route('**/models-mobile/burger-1.glb', route => fail ? route.fulfill({ status: 503, body: 'temporary failure' }) : route.continue());
   await page.goto('/');
+  await page.getByRole('button', { name: '翻开菜单' }).click();
   await page.getByRole('button', { name: '开始品尝' }).click();
   await idle(page, 0); await bites(page, 4, false);
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'waiting');
@@ -83,6 +85,7 @@ test('failed next asset retains full progress and model until retry succeeds', a
 test('direct food interaction and help restore focus without a separate eat button', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('button', { name: '翻开菜单' }).click();
   await page.getByRole('button', { name: '开始品尝' }).click();
   await idle(page, 0);
   await expect(page.getByRole('button', { name: '吃一口', exact: true })).toHaveCount(0);
@@ -113,6 +116,22 @@ test('picker settings persist before starting and return to food cabinet', async
   await page.screenshot({ path: 'docs/screenshots/picker-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: 'docs/screenshots/picker-mobile.png' });
+  const illustration = page.getByRole('img', { name: '复古奶茶杯封装机插画' });
+  await expect(illustration).toBeVisible();
+  expect(await illustration.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1200);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: '翻开菜单' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: '选一份，开吃。' })).toBeFocused();
+  await expect(page.getByRole('button', { name: '开始品尝' })).toBeVisible();
+  expect(modelRequests).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'docs/screenshots/menu-mobile.png', fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'docs/screenshots/menu-desktop.png' });
+  await page.getByRole('button', { name: '返回店面' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: '翻开菜单' })).toBeFocused();
 
   await page.getByRole('button', { name: '设置' }).click();
   const settings = page.getByRole('dialog', { name: '玩得顺手' });
@@ -129,6 +148,7 @@ test('picker settings persist before starting and return to food cabinet', async
   await expect(retained.locator('select')).toHaveValue('reduced');
   await retained.getByRole('button', { name: '完成' }).click();
   const loaded = page.waitForResponse(response => response.url().includes('/models-mobile/burger-0.glb') && response.ok());
+  await page.getByRole('button', { name: '翻开菜单' }).click();
   await page.getByRole('button', { name: '开始品尝' }).click();
   await loaded; await idle(page, 0);
   await page.getByRole('button', { name: '食物柜' }).click();
@@ -138,6 +158,7 @@ test('picker settings persist before starting and return to food cabinet', async
 test('mobile layout fits and reduced-motion completes transitions', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 }); await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  await page.getByRole('button', { name: '翻开菜单' }).click();
   await page.getByRole('button', { name: '开始品尝' }).click();
   await idle(page, 0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
