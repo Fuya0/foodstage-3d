@@ -21,7 +21,7 @@ export const foods: readonly FoodDefinition[] = [
     id: 'classic-burger',
     name: '经典汉堡',
     description: '四层香气，慢慢吃完。',
-    cover: '/foods/classic-burger.webp',
+    cover: '/foods/classic-burger.svg',
     stages: [0, 1, 2, 3].map(index => ({
       url: `/models-mobile/burger-${index}.glb`,
       bites: 4,

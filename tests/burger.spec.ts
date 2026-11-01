@@ -31,7 +31,7 @@ test('real model, drag isolation, four-bite transition and 16-bite replay', asyn
   await expect(page.locator('h1')).toHaveText('食刻');
   await expect(page.locator('.progress')).toBeVisible();
   await expect(page.locator('.keyboard-hint')).toHaveCount(0);
-  await expect(page.locator('.experience')).toHaveCSS('background-color', 'rgb(251, 250, 248)');
+  await expect(page.locator('.experience')).toHaveCSS('background-color', 'rgb(250, 248, 241)');
   await page.screenshot({ path: 'docs/screenshots/desktop-initial.png' });
   await page.screenshot({ path: 'test-results/stage-0.png' });
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/stage-1.png', omitBackground: true });
