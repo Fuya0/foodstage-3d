@@ -37,7 +37,7 @@ export const menuItems: readonly MenuItem[] = [
   {
     id: 'lemon-soda', name: '鲜柠气泡饮', category: '饮品',
     description: '鲜切柠檬与清爽气泡水，沁凉爽口',
-    price: 1600, cover: '/foods/lemon-soda.svg', available: true,
+    price: 1600, cover: '/foods/lemon-soda.svg', foodId: 'lemon-soda', available: true,
     options: [{ id: 'ice', name: '冰量', choices: [{ id: 'regular', label: '正常冰', priceDelta: 0 }, { id: 'less', label: '少冰', priceDelta: 0 }, { id: 'none', label: '去冰', priceDelta: 0 }] }],
   },
   {

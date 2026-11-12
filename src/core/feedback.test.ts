@@ -12,6 +12,15 @@ const sound: FoodSound = {
 
 const singleChew: FoodSound = { chews: ['/audio/test/chew-1.mp3'] };
 
+const drinkSound: FoodSound = {
+  chews: [],
+  sips: {
+    first: '/audio/test/sip-1.mp3',
+    regular: ['/audio/test/sip-2.mp3'],
+    finish: '/audio/test/sip-finish.mp3',
+  },
+};
+
 /** Let the async audio path (resume, decode, playback) settle before asserting. */
 const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
@@ -258,6 +267,30 @@ describe('biteFeedback', () => {
     expect(sources.every(source => source.start.mock.calls.length === 1)).toBe(true);
     expect(context.createOscillator).not.toHaveBeenCalled();
   });
+  it('sips instead of chewing for a drink that ships sip recordings', async () => {
+    const { nodes } = audioBoundary();
+    const fetch = stubFetch();
+    const { biteFeedback } = await import('./feedback');
+    biteFeedback(settings, drinkSound, 'bite', 'drink');
+    await flush();
+    expect(fetch.mock.calls[0]![0]).toBe('/audio/test/sip-1.mp3');
+    const sources = nodes.filter(entry => entry.kind === 'source');
+    expect(sources).toHaveLength(1);
+    expect(nodes.filter(entry => entry.kind === 'oscillator')).toHaveLength(0);
+
+    biteFeedback(settings, drinkSound, 'finish', 'drink');
+    await flush();
+    expect(fetch.mock.calls[1]![0]).toBe('/audio/test/sip-finish.mp3');
+  });
+
+  it('never synthesizes a chewing tone for a drink without sips', async () => {
+    const { nodes } = audioBoundary();
+    const { biteFeedback } = await import('./feedback');
+    biteFeedback(settings, { chews: [] }, 'chew', 'drink');
+    await flush();
+    expect(nodes).toHaveLength(0);
+  });
+
   it('does not create audio when muted, while allowing optional finishing vibration', async () => {
     const { Constructor } = audioBoundary();
     const vibrate = vi.fn();
@@ -341,6 +374,61 @@ describe('biteFeedback', () => {
     expect(fetch).toHaveBeenCalledTimes(4);
     expect(context.decodeAudioData).toHaveBeenCalledTimes(4);
     expect(nodes.filter((entry) => entry.kind === 'source')).toHaveLength(0);
+  });
+
+  it('applies the stage tint and plays the stage-specific recording', async () => {
+    const { nodes } = audioBoundary();
+    const fetch = stubFetch();
+    const { biteFeedback } = await import('./feedback');
+    const staged: FoodSound = {
+      chews: ['/audio/test/chew-1.mp3'],
+      stages: [undefined, undefined, undefined, {
+        chews: ['/audio/test/dry.mp3'],
+        tint: { brightness: 3, weight: 2, rate: 1.05, gain: 1.2 },
+      }],
+    };
+    biteFeedback(settings, staged, 'chew', 'solid', 3);
+    await flush();
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0]![0]).toBe('/audio/test/dry.mp3');
+
+    const filters = nodes.filter((entry) => entry.kind === 'filter');
+    const low = filters.find((entry) => entry.type === 'lowshelf');
+    const high = filters.find((entry) => entry.type === 'highshelf');
+    expect(low!.frequency.value).toBe(220);
+    expect(low!.gain.value).toBe(2);
+    expect(high!.frequency.value).toBe(3000);
+    expect(high!.gain.value).toBe(3);
+
+    const [source] = nodes.filter((entry) => entry.kind === 'source');
+    expect(source!.playbackRate.value).toBeGreaterThanOrEqual(0.95 * 1.05);
+    expect(source!.playbackRate.value).toBeLessThanOrEqual(1.05 * 1.05);
+
+    const [gain] = nodes.filter((entry) => entry.kind === 'gain');
+    expect(gain!.gain.value).toBeGreaterThanOrEqual(0.42 * 1.2 * 0.95);
+    expect(gain!.gain.value).toBeLessThanOrEqual(0.42 * 1.2 * 1.05);
+  });
+
+  it('warms stage-specific recordings before the first bite', async () => {
+    audioBoundary();
+    const fetch = stubFetch();
+    const { primeBiteAudio } = await import('./feedback');
+    primeBiteAudio({ chews: ['/audio/test/base.mp3'], stages: [undefined, { chews: ['/audio/test/stage-1.mp3'] }] });
+    await flush();
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual(['/audio/test/base.mp3', '/audio/test/stage-1.mp3']);
+  });
+
+  it('warms sip recordings for a drink before the first sip', async () => {
+    const { context } = audioBoundary();
+    const fetch = stubFetch();
+    const { primeBiteAudio } = await import('./feedback');
+    primeBiteAudio(drinkSound);
+    await flush();
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual([
+      '/audio/test/sip-1.mp3', '/audio/test/sip-finish.mp3', '/audio/test/sip-2.mp3',
+    ]);
+    expect(context.decodeAudioData).toHaveBeenCalledTimes(3);
   });
 
   it('honours a per-food level override', async () => {

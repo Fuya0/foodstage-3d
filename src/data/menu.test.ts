@@ -9,8 +9,7 @@ describe('restaurant menu', () => {
     for (const id of ['crispy-chicken', 'mango-cheesecake']) {
       expect(menuItemById(id)).toMatchObject({ available: true, foodId: id });
     }
-    expect(menuItemById('lemon-soda')).toMatchObject({ available: true });
-    expect(menuItemById('lemon-soda')?.foodId).toBeUndefined();
+    expect(menuItemById('lemon-soda')).toMatchObject({ available: true, foodId: 'lemon-soda' });
     expect(menuItemById('lemon-soda')?.cover).toBe('/foods/lemon-soda.svg');
     expect(menuItems.some(item => !item.foodId)).toBe(true);
     expect(menuItems.some(item => !item.available)).toBe(true);
