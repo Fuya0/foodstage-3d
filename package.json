@@ -1,39 +1,24 @@
 {
-  "name": "foodstage-3d",
-  "description": "食刻（FoodStage 3D）——带 3D 虚拟试吃的餐厅扫码点单演示",
-  "repository": { "type": "git", "url": "https://github.com/Fuya0/foodstage-3d.git" },
-  "version": "0.1.0",
+  "name": "siam-shike-sketch-ordering",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "test": "vitest run",
-    "test:browser": "playwright test",
-    "typecheck": "tsc --noEmit",
+    "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "optimize:models": "node scripts/optimize-models.mjs",
-    "optimize:sample": "node scripts/optimize-models.mjs --sample",
-    "assets:inventory": "python tools/assets.py inventory",
-    "assets:verify": "python tools/assets.py verify",
-    "assets:sync": "python tools/assets.py sync"
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@react-three/fiber": "^9.4.0",
-    "lucide-react": "^1.66.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "three": "^0.180.0"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.1",
     "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@types/three": "^0.180.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.0.4",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
     "vitest": "^3.2.4"
-  },
-  "packageManager": "pnpm@10.19.0"
+  }
 }
