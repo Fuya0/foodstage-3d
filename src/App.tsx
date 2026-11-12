@@ -99,7 +99,7 @@ function PlayScreen({ food, settings, onSettingsChange, onBack }: { food: FoodDe
     const finishing = state.bites === food.stages[state.stage]!.bites - 1;
     const role = finishing ? 'finish' : state.bites === 0 ? 'bite' : 'chew';
     impulse(motion, finishing ? 1 : 0.65);
-    biteFeedback(settings, food.sound, role, food.interaction);
+    biteFeedback(settings, food.sound, role, food.interaction, state.stage);
     setChewing(true);
     if (!finishing) dispatch({ type: 'BITE' });
     chewTimer.current = setTimeout(() => {
