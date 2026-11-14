@@ -24,3 +24,10 @@ public/food-redo-v2-models/
 public/food-redo-v2-models.html
 public/food-redo-v2-references/
 public/food-redo-v2-review.html
+
+# Local agent work products; retain only portable regression sources
+/.codex/*
+!/.codex/playwright.config.ts
+!/.codex/tests/
+/.codex/tests/*
+!/.codex/tests/*.spec.ts

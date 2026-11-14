@@ -19,8 +19,8 @@ for (const width of [390, 1440]) {
       await expect(experience).toHaveAttribute('data-stage', String(stage));
       await expect(experience).toHaveAttribute('data-phase', 'idle');
       await expect(input).toHaveAttribute('data-hit-ready', 'true');
-      await expect(page.locator('canvas')).toHaveAttribute('data-stage-blend', '1');
-      await page.screenshot({ path: `artifacts/fries-only-20261106/screenshots/${width}-stage-${stage}.png` });
+      await expect(page.locator('canvas[data-engine]')).toHaveAttribute('data-stage-blend', '1');
+      await page.screenshot({ path: `.codex/screenshots/fries-only-20261106/screenshots/${width}-stage-${stage}.png` });
       if (stage === 3) break;
       for (let bite = 0; bite < [5, 6, 5][stage]!; bite++) {
         await expect(input).toHaveAttribute('aria-disabled', 'false');

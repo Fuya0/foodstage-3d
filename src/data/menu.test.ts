@@ -10,7 +10,8 @@ describe('restaurant menu', () => {
     for (const id of ['crispy-chicken', 'mango-cheesecake']) {
       expect(menuItemById(id)).toMatchObject({ available: true, foodId: id });
     }
-    expect(menuItemById('lemon-soda')).toMatchObject({ available: true, modelFoodId: 'lemon-soda' });
+    expect(menuItemById('lemon-soda')).toMatchObject({ available: true });
+    expect(menuItemById('lemon-soda')?.modelFoodId).toBeUndefined();
     expect(menuItemById('lemon-soda')?.foodId).toBeUndefined();
     expect(menuItemById('lemon-soda')?.cover).toBe('/foods/lemon-soda.svg');
     expect(menuItems.some(item => !item.foodId)).toBe(true);
@@ -23,7 +24,7 @@ describe('restaurant menu', () => {
         expect(previewModels[`../../public${item.previewModelUrl}`]).toBeDefined();
       } else {
         expect(covers[`../../public${item.cover}`]).toBeDefined();
-        expect(foods.some(food => food.id === (item.modelFoodId ?? item.foodId))).toBe(true);
+        if (item.modelFoodId || item.foodId) expect(foods.some(food => food.id === (item.modelFoodId ?? item.foodId))).toBe(true);
       }
       if (item.foodId) expect(foods.some(food => food.id === item.foodId)).toBe(true);
     }
@@ -34,15 +35,16 @@ describe('restaurant menu', () => {
     expect(menuItemById('mango-cheesecake')?.cover).toBe('/foods/mango-cheesecake-cutout.png');
     expect(menuItemById('missing')).toBeUndefined();
   });
-  it('keeps display-only drinks and shared fries geometry separate from tasting and availability', () => {
+  it('uses images for drinks and does not offer tasting for sold-out fries', () => {
     for (const id of ['coca-cola', 'sprite', 'fanta-orange', 'coca-cola-no-sugar']) {
       const item = menuItemById(id);
-      expect(item).toMatchObject({ available: true, category: '饮品', previewModelUrl: `/models-mobile/${id}-0.glb` });
+      expect(item).toMatchObject({ available: true, category: '饮品' });
+      expect(item?.previewModelUrl).toBeUndefined();
       expect(item?.foodId).toBeUndefined();
       expect(item?.modelFoodId).toBeUndefined();
     }
-    expect(menuItemById('truffle-fries')).toMatchObject({ available: false, foodId: 'rosemary-fries' });
-    for (const item of menuItems) expect(Boolean(item.foodId)).toBe(item.category !== '饮品');
+    expect(menuItemById('truffle-fries')).toMatchObject({ available: false });
+    expect(menuItemById('truffle-fries')?.foodId).toBeUndefined();
     expect(menuItemById('lemon-soda')?.foodId).toBeUndefined();
   });
 });

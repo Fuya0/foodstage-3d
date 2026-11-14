@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { Rotate3D } from 'lucide-react';
 import type { MenuItem } from '../data/menu';
 import { MenuFoodVisual } from './MenuFoodVisual';
 import './food-holo.css';
@@ -10,9 +9,8 @@ const clamp = (value: number) => Math.max(0, Math.min(1, value));
 type IllustrationProps = { item: MenuItem; reducedMotion: boolean };
 
 /** Measure the pointer on the fixed stage so motion never shifts its own target. */
-export function FoodHoloStage({ item, reducedMotion, variant, describedBy }: IllustrationProps & {
+export function FoodHoloStage({ item, reducedMotion, variant }: IllustrationProps & {
   variant: 'hero' | 'detail';
-  describedBy?: string;
 }) {
   const [light, setLight] = useState(restingLight);
   const position = useRef(restingLight);
@@ -71,7 +69,7 @@ export function FoodHoloStage({ item, reducedMotion, variant, describedBy }: Ill
   const model = <MenuFoodVisual item={item} variant={variant} holo={pose} />;
   const floating = variant === 'hero';
   return <div className={floating ? 'food-holo-stage food-holo-stage--hero' : 'food-holo-stage'}
-      role="group" aria-label={floating ? `${item.name}互动模型` : `${item.name}展示卡`} aria-describedby={describedBy}
+      role="group" aria-label={floating ? `${item.name}互动模型` : `${item.name}展示卡`}
       tabIndex={reducedMotion ? undefined : 0} onKeyDown={handleKey} onBlur={() => aim(restingLight)}
       onPointerEnter={track} onPointerMove={track} onPointerDown={track}
       onPointerUp={event => { if (event.pointerType !== 'mouse') aim(restingLight); }}
@@ -83,10 +81,7 @@ export function FoodHoloStage({ item, reducedMotion, variant, describedBy }: Ill
 }
 
 export function FoodHoloCard({ item, reducedMotion }: IllustrationProps) {
-  return <figure className="food-holo">
-    <FoodHoloStage item={item} reducedMotion={reducedMotion} variant="detail" describedBy="food-holo-hint" />
-    <figcaption id="food-holo-hint"><Rotate3D size={15} aria-hidden="true" />
-      {reducedMotion ? '拖动旋转' : <>移动看流光 · 拖动旋转<span className="food-holo-key-hint"> · 方向键可调光</span></>}
-    </figcaption>
+  return <figure className="food-holo" aria-label={`${item.name}展示卡`}>
+    <FoodHoloStage item={item} reducedMotion={reducedMotion} variant="detail" />
   </figure>;
 }

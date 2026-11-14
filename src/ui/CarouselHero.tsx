@@ -9,6 +9,20 @@ export interface LoopSceneBridge {
   centerY: number;
   diameter: number;
   redraw?: () => void;
+  loadIndices?: readonly number[];
+  onLoadWindowChange?: (indices: readonly number[]) => void;
+}
+
+export function carouselLoadIndices(slots: LoopSceneBridge['slots'], count: number, prefetch = true): number[] {
+  const visible = [...slots].sort((a, b) => a.x - b.x).map(slot => slot.index);
+  const indices = [...new Set(visible)];
+  // Prefetch in the automatic travel direction, but leave at least one dish
+  // deferred on short menus instead of degenerating into a full-menu request.
+  if (prefetch && indices.length && indices.length < count - 1) {
+    const next = (indices[indices.length - 1]! + 1) % count;
+    if (!indices.includes(next)) indices.push(next);
+  }
+  return indices;
 }
 const wrap = (value: number, period: number) => ((value % period) + period) % period;
 const speed = 44; // CSS pixels per second, independent of refresh rate.
@@ -25,7 +39,8 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
   const step = useRef(1);
   const pointer = useRef<{ id: number; x: number; y: number; origin: number; dragged: boolean } | null>(null);
   const suppressClick = useRef(false);
-  const hovered = useRef(false);
+  const pointerPosition = useRef<{ x: number; y: number } | null>(null);
+  const focusedIndex = useRef<number | null>(null);
   const keyboardFocus = useRef(false);
   const redraw = useRef<() => void>(() => {});
   const [paused, setPaused] = useState(false);
@@ -50,10 +65,25 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
         if (button) button.style.transform = 'translate3d(' + left + 'px, 0, 0)';
         if (left < width && left + pitch > 0) scene.slots.push({ index: i, x, width: pitch });
       }
+      const point = pointerPosition.current;
+      const bounds = el!.getBoundingClientRect();
+      const localX = point ? point.x - bounds.left : -1;
+      const inside = point && localX >= 0 && localX < width && point.y >= bounds.top && point.y < bounds.bottom;
+      const activeIndex = inside
+        ? scene.slots.find(slot => localX >= slot.x - slot.width / 2 && localX < slot.x + slot.width / 2)?.index
+        : focusedIndex.current;
+      for (let i = 0; i < items.length; i++) {
+        buttons.current[i]?.setAttribute('data-active', String(i === activeIndex));
+      }
+      const loadIndices = carouselLoadIndices(scene.slots, items.length, !reducedMotion);
+      if (loadIndices.join(',') !== scene.loadIndices?.join(',')) {
+        scene.loadIndices = loadIndices;
+        scene.onLoadWindowChange?.(loadIndices);
+      }
       scene.redraw?.();
     }
     function advancing() {
-      return visible && !document.hidden && !paused && !reducedMotion && !hovered.current && !keyboardFocus.current && !pointer.current;
+      return visible && !document.hidden && !paused && !reducedMotion && !keyboardFocus.current && !pointer.current;
     }
     function tick(now: number) {
       frame = 0;
@@ -102,12 +132,19 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
 
   function pointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
+    focusedIndex.current = null;
+    keyboardFocus.current = false;
     suppressClick.current = false;
+    pointerPosition.current = { x: event.clientX, y: event.clientY };
     pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, origin: offset.current, dragged: false };
     // Keep taps on their original button. Capture the window only after a horizontal drag starts.
     redraw.current();
   }
   function pointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === 'mouse' || pointer.current?.id === event.pointerId) {
+      pointerPosition.current = { x: event.clientX, y: event.clientY };
+      redraw.current();
+    }
     const start = pointer.current;
     if (!start || start.id !== event.pointerId) return;
     const dx = event.clientX - start.x;
@@ -122,7 +159,9 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
   }
   function release(event: PointerEvent<HTMLDivElement>) {
     if (pointer.current?.id !== event.pointerId) return;
+    if (event.type === 'pointercancel') suppressClick.current = true;
     pointer.current = null;
+    if (event.pointerType !== 'mouse') pointerPosition.current = null;
     redraw.current();
   }
   function navigate(event: KeyboardEvent<HTMLDivElement>) {
@@ -137,6 +176,7 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
       else if (event.key === 'Home') next = 0;
       else if (event.key === 'End') next = items.length - 1;
       else return;
+      pointerPosition.current = null;
       keyboardFocus.current = true;
       offset.current = wrap(next, items.length);
       buttons.current[offset.current]?.focus({ preventScroll: true });
@@ -148,11 +188,11 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
   return <div className="food-carousel-hero" role="region" aria-label="招牌菜滚动展示">
     <div ref={viewport} className="food-loop-window" role="group" aria-label="左右方向键切换菜品，回车查看详情" tabIndex={0}
       onKeyDown={navigate}
-      onFocus={event => { if (event.target.matches(':focus-visible')) { keyboardFocus.current = true; redraw.current(); } }}
-      onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) { keyboardFocus.current = false; redraw.current(); } }}
-      onPointerEnter={event => { if (event.pointerType === 'mouse') { hovered.current = true; redraw.current(); } }}
+      onFocus={event => { if (event.target.matches(':focus-visible')) { pointerPosition.current = null; keyboardFocus.current = true; redraw.current(); } }}
+      onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) { keyboardFocus.current = false; focusedIndex.current = null; redraw.current(); } }}
+      onPointerEnter={event => { if (event.pointerType === 'mouse') { pointerPosition.current = { x: event.clientX, y: event.clientY }; redraw.current(); } }}
       onPointerLeave={event => {
-        if (event.pointerType === 'mouse') hovered.current = false;
+        pointerPosition.current = null;
         if (!pointer.current?.dragged) pointer.current = null;
         redraw.current();
       }}
@@ -160,11 +200,11 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
       onLostPointerCapture={event => { if (event.target === event.currentTarget) release(event); }} onClickCapture={event => {
         if (suppressClick.current && event.detail > 0) { event.stopPropagation(); suppressClick.current = false; }
       }}>
-      <CarouselModels items={items} bridge={bridge} />
+      <CarouselModels items={items} bridge={bridge} reducedMotion={reducedMotion} />
       {items.map((item, i) => <button key={item.modelId} type="button" className="food-loop-item" data-index={i}
         ref={element => { buttons.current[i] = element; }} aria-label={'打开' + item.title + '详情'}
         onFocus={event => {
-          if (event.currentTarget.matches(':focus-visible')) { offset.current = i; redraw.current(); }
+          if (event.currentTarget.matches(':focus-visible')) { focusedIndex.current = i; offset.current = i; redraw.current(); }
         }}
         onClick={() => onOpenCurrent(item)}>
         <span className="food-loop-caption"><strong>{item.title}</strong><span>{item.subtitle}</span></span>

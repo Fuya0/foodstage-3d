@@ -67,16 +67,15 @@
   inset: 3% 4%;
 }
 
-.food-holo figcaption {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: #69513d;
+.ordering-detail-art .food-holo-print > .ordering-cover {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  padding: 20% 24%;
 }
-
-.food-holo-key-hint { display: none; }
-.food-holo:has(.food-holo-stage:focus-visible) .food-holo-key-hint { display: inline; }
+.ordering-detail-art .food-holo-print > .ordering-cover img {
+  filter: drop-shadow(0 8px 10px #3822182e);
+}
 
 @media (max-width: 760px) {
   .food-holo { padding: 10px 0 7px; gap: 11px; }

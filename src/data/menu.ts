@@ -19,9 +19,9 @@ export interface MenuItem {
 export const menuCategories = ['推荐', '主食', '小食', '饮品', '甜点'] as const;
 function cannedDrink(id: string, name: string, flavour: string): MenuItem {
   return {
-    id, name, category: '饮品', description: `330 mL 罐装 · ${flavour}`,
+    id, name, category: '饮品', description: `${flavour}，330 mL 罐装`,
     price: 500, unit: '罐', available: true,
-    cover: `/foods/${id}.png`, previewModelUrl: `/models-mobile/${id}-0.glb`,
+    cover: `/foods/${id}.png`,
   };
 }
 
@@ -29,7 +29,7 @@ export const menuItems: readonly MenuItem[] = [
   {
     id: 'classic-burger', name: '经典汉堡', category: '主食',
     description: '炙烤牛肉饼、切达芝士与脆生菜，夹进松软芝麻面包',
-    price: 3200, cover: '/foods/burger-double-cutout.png', foodId: 'classic-burger', available: true,
+    price: 3200, cover: '/foods/burger-menu-cutout.png', foodId: 'classic-burger', available: true,
     options: [
       { id: 'spice', name: '辣度', choices: [{ id: 'mild', label: '不辣', priceDelta: 0 }, { id: 'hot', label: '微辣', priceDelta: 0 }] },
       { id: 'cheese', name: '芝士', choices: [{ id: 'regular', label: '标准芝士', priceDelta: 0 }, { id: 'extra', label: '双份芝士', priceDelta: 300 }] },
@@ -62,12 +62,12 @@ export const menuItems: readonly MenuItem[] = [
   {
     id: 'truffle-fries', name: '黑松露帕玛森薯条', category: '小食',
     description: '金黄薯条佐黑松露风味酱与帕玛森芝士，今日份已售罄',
-    price: 2600, cover: '/foods/rosemary-fries-cutout.png', foodId: 'rosemary-fries', available: false,
+    price: 2600, cover: '/foods/rosemary-fries-cutout.png', available: false,
   },
   {
     id: 'lemon-soda', name: '鲜柠气泡饮', category: '饮品',
     description: '鲜切柠檬与清爽气泡水，沁凉爽口',
-    price: 1600, cover: '/foods/lemon-soda.svg', modelFoodId: 'lemon-soda', available: true,
+    price: 1600, cover: '/foods/lemon-soda.svg', available: true,
     options: [{ id: 'ice', name: '冰量', choices: [{ id: 'regular', label: '正常冰', priceDelta: 0 }, { id: 'less', label: '少冰', priceDelta: 0 }, { id: 'none', label: '去冰', priceDelta: 0 }] }],
   },
   cannedDrink('coca-cola', '可口可乐', '经典原味可乐'),

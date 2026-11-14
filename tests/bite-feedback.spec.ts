@@ -6,7 +6,7 @@ test('bite has visible crumbs and recoil, settles, and respects reduced motion',
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
   await page.getByRole('button', { name: '虚拟试吃' }).click();
   const food = page.getByRole('button', { name: '经典汉堡' });
-  const canvas = page.locator('canvas');
+  const canvas = page.locator('canvas[data-engine]');
   await expect(food).toHaveAttribute('data-hit-ready', 'true');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
   await canvas.evaluate(element => {
@@ -28,7 +28,7 @@ test('bite has visible crumbs and recoil, settles, and respects reduced motion',
   await expect(food).toHaveAttribute('aria-disabled', 'false');
   await expect.poll(async () => Number(await canvas.getAttribute('data-peak-crumbs'))).toBeGreaterThanOrEqual(3);
   await expect.poll(async () => Number(await canvas.getAttribute('data-peak-recoil'))).toBeGreaterThan(0.001);
-  await page.screenshot({ path: 'docs/screenshots/bite-feedback.png' });
+  await page.screenshot({ path: '.codex/screenshots/bite-feedback.png' });
   await expect(canvas).toHaveAttribute('data-crumbs', '0');
   await expect(canvas).toHaveAttribute('data-recoil', '0');
   await page.getByRole('button', { name: '设置' }).click();

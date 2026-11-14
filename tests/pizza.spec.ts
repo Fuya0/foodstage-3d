@@ -10,8 +10,11 @@ for (const width of [390, 1440]) {
     });
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/?table=A01&mode=dine-in&guests=2');
-    await page.getByRole('button', { name: '查看意式双重芝士披萨' }).click();
-    await expect(page.locator('.ordering-detail-art img')).toHaveAttribute('src', '/foods/pizza-six-0-cutout.png');
+    const card = page.locator('.ordering-food-card').filter({ has: page.getByRole('heading', { name: '意式双重芝士披萨', exact: true }) });
+    await expect(card.getByRole('img', { name: '意式双重芝士披萨', exact: true })).toHaveAttribute('src', '/foods/pizza-six-0-cutout.png');
+    await card.getByRole('button', { name: '查看意式双重芝士披萨' }).click();
+    await expect(page.locator('.ordering-detail-art').getByTestId('menu-model-preview')).toHaveAttribute('data-ready', 'true');
+    await expect(page.locator('.ordering-detail-art canvas[data-engine]')).toBeVisible();
     await page.getByRole('button', { name: '虚拟试吃', exact: true }).click();
     const experience = page.getByTestId('experience');
     const input = page.getByRole('button', { name: '意式双重芝士披萨', exact: true });
@@ -20,8 +23,8 @@ for (const width of [390, 1440]) {
       await expect(experience).toHaveAttribute('data-stage', String(stage));
       await expect(experience).toHaveAttribute('data-phase', 'idle');
       await expect(input).toHaveAttribute('data-hit-ready', 'true');
-      await expect(page.locator('canvas')).toHaveAttribute('data-stage-blend', '1');
-      await page.screenshot({ path: `artifacts/pizza-20261106/${width}-stage-${stage}.png` });
+      await expect(page.locator('canvas[data-engine]')).toHaveAttribute('data-stage-blend', '1');
+      await page.screenshot({ path: `.codex/screenshots/pizza-20261106/${width}-stage-${stage}.png` });
       for (let bite = 0; bite < 3; bite++) {
         await expect(input).toHaveAttribute('aria-disabled', 'false');
         await input.focus();

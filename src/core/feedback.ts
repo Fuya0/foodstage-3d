@@ -1,4 +1,4 @@
-import type { FoodInteraction, FoodSound } from '../data/foods';
+import { soundForStage, type FoodInteraction, type FoodSound, type SoundTint } from '../data/foods';
 import type { Settings } from './settings';
 
 /** Which mouthful of a stage is being taken. */
@@ -69,7 +69,16 @@ function decodeOnce(context: AudioContext, url: string): Promise<AudioBuffer | n
 
 function soundUrls(sound: FoodSound | undefined): string[] {
   if (!sound) return [];
-  const urls = [sound.bite, sound.finish, ...sound.chews].filter((url): url is string => Boolean(url));
+  const collect = (entry: Partial<FoodSound>) => [
+    entry.bite,
+    entry.finish,
+    ...(entry.chews ?? []),
+    ...(entry.sips ? [entry.sips.first, entry.sips.finish, ...entry.sips.regular] : []),
+  ].filter((url): url is string => Boolean(url));
+  const urls = [
+    ...collect(sound),
+    ...(sound.stages ?? []).flatMap(entry => (entry ? collect(entry) : [])),
+  ];
   return [...new Set(urls)];
 }
 
@@ -156,8 +165,14 @@ export function milestoneFeedback(settings: Settings, kind: 'transition' | 'comp
   if (settings.sound) void playMilestone(kind, stage).catch(() => {});
 }
 
-/** URLs for this mouthful, most specific first. */
-function urlsFor(sound: FoodSound, role: BiteRole): string[] {
+/** URLs for this mouthful, most specific first. Drinks sip; they never chew. */
+function urlsFor(sound: FoodSound, role: BiteRole, interaction: FoodInteraction): string[] {
+  if (interaction === 'drink') {
+    const sips = sound.sips;
+    if (!sips) return [];
+    const preferred = role === 'bite' ? sips.first : role === 'finish' ? sips.finish : undefined;
+    return [...new Set([...(preferred ? [preferred] : []), ...rotated(sips.regular)])];
+  }
   const preferred = role === 'bite' ? sound.bite : role === 'finish' ? sound.finish : undefined;
   return [...new Set([...(preferred ? [preferred] : []), ...rotated(sound.chews)])];
 }
@@ -168,7 +183,7 @@ function rotated<T>(items: readonly T[]): T[] {
   return [...items.slice(start), ...items.slice(0, start)];
 }
 
-function playBuffer(context: AudioContext, buffer: AudioBuffer, level: number): void {
+function playBuffer(context: AudioContext, buffer: AudioBuffer, level: number, tint?: SoundTint): void {
   const nodes: AudioNode[] = [];
   let source: AudioBufferSourceNode | undefined;
   let cleanup: (() => void) | undefined;
@@ -177,20 +192,39 @@ function playBuffer(context: AudioContext, buffer: AudioBuffer, level: number): 
     const highpass = context.createBiquadFilter(); nodes.push(highpass);
     const gain = context.createGain(); nodes.push(gain);
     source.buffer = buffer;
-    source.playbackRate.value = 0.95 + Math.random() * 0.1;
+    // Stage colouring: early stages of a food are usually its crisp outside, later ones
+    // its softer inside, so the same recording can sound like a different mouthful.
+    source.playbackRate.value = (0.95 + Math.random() * 0.1) * (tint?.rate ?? 1);
     highpass.type = 'highpass';
     highpass.frequency.value = 70;
+    let tail: AudioNode = highpass;
+    if (tint?.weight) {
+      const weight = context.createBiquadFilter(); nodes.push(weight);
+      weight.type = 'lowshelf';
+      weight.frequency.value = 220;
+      weight.gain.value = tint.weight;
+      tail.connect(weight);
+      tail = weight;
+    }
+    if (tint?.brightness) {
+      const brightness = context.createBiquadFilter(); nodes.push(brightness);
+      brightness.type = 'highshelf';
+      brightness.frequency.value = 3000;
+      brightness.gain.value = tint.brightness;
+      tail.connect(brightness);
+      tail = brightness;
+    }
     const start = context.currentTime;
     const duration = buffer.duration / source.playbackRate.value;
     const end = start + duration;
-    const levelAtStart = level * (0.95 + Math.random() * 0.1);
+    const levelAtStart = level * (tint?.gain ?? 1) * (0.95 + Math.random() * 0.1);
     gain.gain.value = levelAtStart;
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(levelAtStart, start + 0.012);
     gain.gain.setValueAtTime(levelAtStart, Math.max(start + 0.012, end - 0.06));
     gain.gain.linearRampToValueAtTime(0, end);
     source.connect(highpass);
-    highpass.connect(gain);
+    tail.connect(gain);
     gain.connect(context.destination);
     cleanup = trackSource(source, nodes);
     activeRecordings.set(source, gain);
@@ -293,8 +327,9 @@ function playSynthBite(context: AudioContext, finishing: boolean): void {
   }
 }
 
-async function playBite(sound: FoodSound | undefined, role: BiteRole): Promise<void> {
+async function playBite(sound: FoodSound | undefined, role: BiteRole, interaction: FoodInteraction, stage: number): Promise<void> {
   const generation = playbackGeneration;
+  const staged = sound ? soundForStage(sound, stage) : undefined;
   // A single deadline covers device resume, network and all fallback URLs.
   // Work may finish filling the decode cache later, but cannot play a stale bite.
   const ready = (async () => {
@@ -302,8 +337,8 @@ async function playBite(sound: FoodSound | undefined, role: BiteRole): Promise<v
     if (!context) return null;
     if (context.state === 'suspended') await context.resume();
     if (context.state !== 'running') return null;
-    if (sound) {
-      for (const url of urlsFor(sound, role)) {
+    if (staged) {
+      for (const url of urlsFor(staged, role, interaction)) {
         const buffer = await decodeOnce(context, url);
         if (buffer) return { context, buffer };
       }
@@ -320,19 +355,21 @@ async function playBite(sound: FoodSound | undefined, role: BiteRole): Promise<v
     const context = result?.context ?? audioContext;
     if (!context || context.state !== 'running') return;
     if (result?.buffer) {
-      try { playBuffer(context, result.buffer, sound?.level ?? DEFAULT_LEVEL); return; }
+      try { playBuffer(context, result.buffer, staged?.level ?? DEFAULT_LEVEL, staged?.tint); return; }
       catch { /* A failed recording graph is released before synthesizing. */ }
     }
+    // A drink without sip recordings stays quiet: the chewing synth would be a lie.
+    if (interaction === 'drink') return;
     playSynthBite(context, role === 'finish');
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
 }
 
-export function biteFeedback(settings: Settings, sound?: FoodSound, role: BiteRole = 'chew', interaction: FoodInteraction = 'solid'): void {
-  if (settings.sound && interaction !== 'drink') {
+export function biteFeedback(settings: Settings, sound?: FoodSound, role: BiteRole = 'chew', interaction: FoodInteraction = 'solid', stage = 0): void {
+  if (settings.sound) {
     // Browser policy and device failures must never interrupt the interaction.
-    void playBite(sound, role).catch(() => {});
+    void playBite(sound, role, interaction, stage).catch(() => {});
   }
 
   if (settings.haptics) {

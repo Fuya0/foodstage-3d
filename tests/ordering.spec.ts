@@ -1,7 +1,81 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function submitBurger(page: Page) {
+  await page.getByRole('button', { name: '查看经典汉堡' }).click();
+  await page.getByRole('button', { name: /加入点单/ }).click();
+  await page.getByRole('button', { name: /查看购物车/ }).click();
+  await page.getByRole('button', { name: '确认点单' }).click();
+  await page.getByRole('button', { name: '提交演示订单' }).click();
+  await expect(page.getByRole('heading', { name: '演示订单已生成' })).toBeVisible();
+}
+
+test('legacy table links enter the dine-in menu with two guests', async ({ page }) => {
+  await page.goto('/?table=a01');
+  await expect(page.getByRole('button', { name: /当前堂食 · 2 位/ })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('A01 桌', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button', { name: /当前堂食 · 2 位/ })).toBeVisible();
+});
+
+test('recent local orders open explicitly without trapping menu navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?table=A01&mode=dine-in&guests=2');
+  await expect(page.getByRole('button', { name: '查看最近订单' })).toHaveCount(0);
+  await submitBurger(page);
+  await page.getByRole('button', { name: '返回菜单', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '查看经典汉堡' })).toBeVisible();
+  await page.getByRole('button', { name: '查看经典汉堡' }).click();
+  await page.getByRole('button', { name: /加入点单/ }).click();
+  await page.getByRole('button', { name: '查看最近订单' }).click({ timeout: 10_000 });
+  await expect(page.getByRole('heading', { name: '演示订单已生成' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '演示订单已生成' })).toBeVisible();
+  await page.getByRole('button', { name: '返回菜单', exact: true }).click();
+  await page.getByRole('button', { name: '查看经典汉堡' }).click();
+  await page.getByRole('button', { name: /返回菜单/ }).click();
+  await expect(page.getByRole('button', { name: '查看经典汉堡' })).toBeVisible();
+  await page.getByRole('button', { name: /查看购物车，1 件菜品/ }).click();
+  await expect(page.getByRole('heading', { name: '经典汉堡' })).toBeVisible();
+});
+
+test('dine-in order access is restricted to its table even with a stale receipt state', async ({ page }) => {
+  await page.goto('/?table=A01&mode=dine-in&guests=2');
+  await submitBurger(page);
+  const receipt = await page.evaluate(() => window.history.state.receipt);
+  await page.evaluate(() => window.history.replaceState(window.history.state, '', '/?table=B02&mode=dine-in&guests=2'));
+  await page.reload();
+  await expect(page.getByRole('button', { name: '查看经典汉堡' })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(receipt, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '查看最近订单' })).toHaveCount(0);
+  await page.goto('/?mode=takeaway');
+  await expect(page.getByRole('button', { name: '查看最近订单' })).toHaveCount(0);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: /打包/ })).toBeVisible();
+  await expect(page.getByText(receipt, { exact: true })).toHaveCount(0);
+  await page.goto('/?table=A01');
+  await page.getByRole('button', { name: '查看最近订单' }).click({ timeout: 10_000 });
+  await expect(page.getByText(receipt, { exact: true })).toBeVisible();
+});
+
+test('takeaway receipts are only discoverable in a matching takeaway context', async ({ page }) => {
+  await page.goto('/?mode=takeaway');
+  await submitBurger(page);
+  const receipt = await page.evaluate(() => window.history.state.receipt);
+  await page.evaluate(() => window.history.replaceState(window.history.state, '', '/?table=A01&mode=dine-in&guests=2'));
+  await page.reload();
+  await expect(page.getByRole('button', { name: '查看经典汉堡' })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(receipt, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '查看最近订单' })).toHaveCount(0);
+  await page.goto('/?mode=takeaway');
+  await page.getByRole('button', { name: '查看最近订单' }).click({ timeout: 10_000 });
+  await expect(page.getByText(receipt, { exact: true })).toBeVisible();
+});
 
 test('dine-in records the selected guest count through checkout and restored receipt', async ({ page }) => {
   await page.goto('/?table=a01');
+  await page.getByRole('button', { name: /更改用餐方式/ }).click();
   const dineIn = page.getByRole('button', { name: /堂食/ });
   await dineIn.click();
   const dialog = page.getByRole('dialog', { name: '几位用餐？' });

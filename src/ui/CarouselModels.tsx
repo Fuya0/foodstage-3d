@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Box3, Group, MathUtils, Vector3 } from 'three';
 import { FoodInkEffect } from '../scene/FoodInkEffect';
-import { loadPreview, type PreviewAsset } from '../scene/menu-preview-asset';
+import { loadPreviewWindow, type PreviewAsset } from '../scene/menu-preview-asset';
 import type { LoopSceneBridge } from './CarouselHero';
 import { SceneBoundary } from './SceneBoundary';
 
@@ -75,21 +75,36 @@ function ModelStrip({ items, assets, bridge }: { items: readonly ModelItem[]; as
   </>;
 }
 
-export function CarouselModels({ items, bridge }: { items: readonly ModelItem[]; bridge: Bridge }) {
+export function CarouselModels({ items, bridge, reducedMotion = false }: { items: readonly ModelItem[]; bridge: Bridge; reducedMotion?: boolean }) {
   const [assets, setAssets] = useState<Record<string, PreviewAsset>>({});
   const [failed, setFailed] = useState<readonly string[]>([]);
+  const [loadIndices, setLoadIndices] = useState<readonly number[]>([]);
   const [unavailable, setUnavailable] = useState(false);
+  useLayoutEffect(() => {
+    const channel = bridge.current;
+    channel.onLoadWindowChange = setLoadIndices;
+    setLoadIndices(channel.loadIndices ?? []);
+    return () => { delete channel.onLoadWindowChange; };
+  }, [bridge]);
   const markUnavailable = useCallback(() => setUnavailable(true), []);
   useEffect(() => {
-    let mounted = true;
     setFailed([]);
-    items.forEach(({ modelId }) => {
-      void loadPreview(modelId).then(asset => {
-        if (mounted) setAssets(previous => ({ ...previous, [modelId]: asset }));
-      }, () => { if (mounted) setFailed(previous => [...previous, modelId]); });
+    const slots = bridge.current.slots;
+    const center = slots.reduce((sum, slot) => sum + slot.x, 0) / Math.max(1, slots.length);
+    const visible = [...slots].sort((a, b) => Math.abs(a.x - center) - Math.abs(b.x - center)).map(slot => slot.index);
+    const ordered = [...new Set([...visible, ...loadIndices])];
+    const ids = ordered.flatMap(index => items[index] ? [items[index]!.modelId] : []);
+    const missingVisible = visible.some(index => {
+      const id = items[index]?.modelId;
+      return Boolean(id && !assets[id]);
     });
-    return () => { mounted = false; };
-  }, [items]);
+    const intended: string[] = reducedMotion && missingVisible
+      ? [...new Set(visible.flatMap(index => items[index] ? [items[index]!.modelId] : []))]
+      : ids;
+    return loadPreviewWindow(intended, (id, asset) => {
+      setAssets(previous => previous[id] === asset ? previous : { ...previous, [id]: asset });
+    }, id => setFailed(previous => [...previous, id]));
+  }, [items, loadIndices, reducedMotion, bridge, assets]);
   const pending = items.every(item => !assets[item.modelId]);
   const message = unavailable ? '此设备无法显示 3D 模型' : failed.length ? '部分模型未能加载' : pending ? '正在加载 3D 菜品…' : '';
   return <div className="food-carousel-models" data-loaded-models={items.filter(item => assets[item.modelId]).map(item => item.modelId).join(' ')}>
@@ -97,7 +112,10 @@ export function CarouselModels({ items, bridge }: { items: readonly ModelItem[];
       <Canvas frameloop="demand" orthographic camera={{ position: [0, 0, 1000], zoom: 1, near: 0.1, far: 3000 }} dpr={[1, 1.5]}
         gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }}
         fallback={<span className="food-carousel-status">此设备无法显示 3D 模型</span>}>
-        <ModelStrip items={items} assets={assets} bridge={bridge} />
+        <ModelStrip items={items} assets={Object.fromEntries(loadIndices.flatMap(index => {
+          const id = items[index]?.modelId;
+          return id && assets[id] ? [[id, assets[id]]] : [];
+        }))} bridge={bridge} />
       </Canvas>
     </SceneBoundary>
     {message && <span className="food-carousel-status" role="status">{message}</span>}

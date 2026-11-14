@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Camera, Color, HalfFloatType, Mesh, NoBlending, PlaneGeometry, Scene, ShaderMaterial, Vector2, WebGLRenderTarget } from 'three';
+import { Camera, Color, UnsignedByteType, Mesh, NoBlending, PlaneGeometry, Scene, ShaderMaterial, Vector2, WebGLRenderTarget } from 'three';
 
 // Work from the rendered silhouette, not the scan's triangle edges. This keeps
 // the line width stable in CSS pixels and follows rotation, bites and fades
 // without adding geometry to the food's raycast/hit-test tree.
-function createInkPass() {
-  const target = new WebGLRenderTarget(1, 1, { type: HalfFloatType, samples: 4 });
+export function createInkPass() {
+  const target = new WebGLRenderTarget(1, 1, { type: UnsignedByteType, samples: 0 });
   const material = new ShaderMaterial({
     depthTest: false, depthWrite: false, blending: NoBlending,
     uniforms: {
@@ -37,8 +37,8 @@ function createInkPass() {
       void main() {
         vec4 source = texture2D(food, vUv);
         float expanded = source.a;
-        for (int i = 0; i < 12; i++) {
-          float angle = float(i) * 6.2831853 / 12.0;
+        for (int i = 0; i < 8; i++) {
+          float angle = float(i) * 6.2831853 / 8.0;
           expanded = max(expanded, coverage(vUv + vec2(cos(angle), sin(angle)) * texel * stroke));
         }
         // Only the coverage difference is inked: glass stays translucent and
@@ -46,11 +46,9 @@ function createInkPass() {
         float ink = max(0.0, expanded - source.a);
         vec2 shadowUv = vUv - shadowOffset * texel;
         vec2 blur = texel * shadowBlur;
-        float shadow = (coverage(shadowUv) * 2.0
-          + coverage(shadowUv + vec2(blur.x, 0.0))
-          + coverage(shadowUv - vec2(blur.x, 0.0))
-          + coverage(shadowUv + vec2(0.0, blur.y))
-          + coverage(shadowUv - vec2(0.0, blur.y))) / 6.0 * 0.18;
+        float shadow = (coverage(shadowUv)
+          + coverage(shadowUv + blur)
+          + coverage(shadowUv - blur)) / 3.0 * 0.18;
 
         // Offscreen transparent rendering contains premultiplied linear RGB.
         // Grade the unassociated color once, then composite ink in display RGB.
@@ -77,6 +75,20 @@ function createInkPass() {
     dispose() { target.dispose(); material.dispose(); geometry.dispose(); } };
 }
 
+export function resizeInkPass(pass: ReturnType<typeof createInkPass>, bufferWidth: number, bufferHeight: number, cssWidth: number, preview: boolean) {
+  const ratio = bufferWidth / Math.max(1, cssWidth);
+  const scale = preview ? 1 / Math.max(1, ratio) : 1;
+  const width = Math.max(1, Math.round(bufferWidth * scale));
+  const height = Math.max(1, Math.round(bufferHeight * scale));
+  if (pass.target.width !== width || pass.target.height !== height) pass.target.setSize(width, height);
+  const pixelRatio = width / Math.max(1, cssWidth);
+  const uniforms = pass.material.uniforms;
+  uniforms.texel!.value.set(1 / width, 1 / height);
+  uniforms.stroke!.value = (preview ? 1.5 : 2.5) * pixelRatio;
+  uniforms.shadowOffset!.value.set(preview ? 2 : 4, preview ? -3 : -6).multiplyScalar(pixelRatio);
+  uniforms.shadowBlur!.value = (preview ? 1.5 : 3) * pixelRatio;
+}
+
 export function FoodInkEffect({ preview = false }: { preview?: boolean }) {
   const pass = useRef<ReturnType<typeof createInkPass> | null>(null);
   const invalidate = useThree(state => state.invalidate);
@@ -92,14 +104,7 @@ export function FoodInkEffect({ preview = false }: { preview?: boolean }) {
     const current = pass.current;
     if (!current) { gl.render(scene, camera); return; }
     gl.getDrawingBufferSize(current.size);
-    const { x: width, y: height } = current.size;
-    if (current.target.width !== width || current.target.height !== height) current.target.setSize(width, height);
-    const pixelRatio = width / Math.max(1, size.width);
-    const uniforms = current.material.uniforms;
-    uniforms.texel!.value.set(1 / width, 1 / height);
-    uniforms.stroke!.value = (preview ? 1.5 : 2.5) * pixelRatio;
-    uniforms.shadowOffset!.value.set(preview ? 2 : 4, preview ? -3 : -6).multiplyScalar(pixelRatio);
-    uniforms.shadowBlur!.value = (preview ? 1.5 : 3) * pixelRatio;
+    resizeInkPass(current, current.size.x, current.size.y, size.width, preview);
 
     const previousTarget = gl.getRenderTarget();
     const previousAlpha = gl.getClearAlpha();

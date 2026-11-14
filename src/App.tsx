@@ -27,7 +27,7 @@ import { SettingsSheet } from './ui/SettingsSheet';
 
 import { Progress } from './ui/Progress';
 import { FoodMark } from './ui/FoodMark';
-import { ArrowLeft, Minus, Pause, Play, Plus, RotateCcw } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 function useSystemReducedMotion() {
   const [reduced, setReduced] = useState(() => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -59,15 +59,10 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
   const [state, dispatch] = useReducer(reducer, undefined, () => createSequenceState(food.stages));
   const [motion] = useState(createMotion);
   const [zoom, setZoom] = useState(1);
-  const [spinning, setSpinning] = useState(true);
   const zoomBy = useCallback((factor: number) => {
     motion.idle = 0;
     setZoom(current => Math.max(0.7, Math.min(2, current * factor)));
   }, [motion]);
-  const resetView = () => {
-    Object.assign(motion, { x: 0, y: 0, vx: 0, vy: 0, hoverPitch: 0, hoverYaw: 0, idle: 0 });
-    setZoom(1);
-  };
   const [chewing, setChewing] = useState(false);
   const chewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (chewTimer.current) clearTimeout(chewTimer.current); }, []);
@@ -109,7 +104,7 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
     const finishing = state.bites === food.stages[state.stage]!.bites - 1;
     const role = finishing ? 'finish' : state.bites === 0 ? 'bite' : 'chew';
     impulse(motion, finishing ? 1 : 0.65);
-    biteFeedback(settings, food.sound, role, food.interaction);
+    biteFeedback(settings, food.sound, role, food.interaction, state.stage);
     setChewing(true);
     if (!finishing) dispatch({ type: 'BITE' });
     chewTimer.current = setTimeout(() => {
@@ -132,15 +127,8 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
     <section className={`stage${state.phase === 'finished' ? ' empty' : ''}`} aria-label="食物空间">
       {state.phase === 'finished' && <div className="finished-state"><div className="finished-stamp">吃光了</div><h2>刚刚好</h2><p>这一刻，值得再来一次。</p></div>}
       {state.phase !== 'finished' && <SceneBoundary><div className="food-input" role="button" tabIndex={0} aria-label={item.name} aria-describedby="food-hint" aria-disabled={!playable} data-hit-ready={hitReady} {...input} onContextMenu={event => event.preventDefault()}>
-        {!contextLost && current?.status === 'ready' && base?.status === 'ready' && <Scene zoom={zoom} spinning={spinning} interaction={food.interaction} asset={current.asset} base={base.asset} state={state} motion={motion} stage={food.stages[state.stage]!} reduced={reduced} dispatch={event => dispatch(event)} setHit={setHit} onContextLost={handleContextLost} />}
+        {!contextLost && current?.status === 'ready' && base?.status === 'ready' && <Scene zoom={zoom} spinning interaction={food.interaction} asset={current.asset} base={base.asset} state={state} motion={motion} stage={food.stages[state.stage]!} reduced={reduced} dispatch={event => dispatch(event)} setHit={setHit} onContextLost={handleContextLost} />}
       </div></SceneBoundary>}
-      {hitReady && !contextLost && state.phase !== 'finished' && <div className="viewer-controls" role="group" aria-label="模型视角">
-        {!reduced && <button type="button" aria-label={spinning ? '暂停自动旋转' : '开始自动旋转'} title={spinning ? '暂停自动旋转' : '开始自动旋转'} onClick={() => setSpinning(value => !value)}>{spinning ? <Pause /> : <Play />}</button>}
-        <button type="button" aria-label="缩小模型" title="缩小模型" disabled={zoom <= 0.7} onClick={() => zoomBy(1 / 1.2)}><Minus /></button>
-        <output aria-label="模型缩放比例">{Math.round(zoom * 100)}%</output>
-        <button type="button" aria-label="放大模型" title="放大模型" disabled={zoom >= 2} onClick={() => zoomBy(1.2)}><Plus /></button>
-        <button type="button" aria-label="重置视角" title="重置视角" onClick={resetView}><RotateCcw /></button>
-      </div>}
     </section>
     <footer className="action-dock">
       <div className="food-detail"><div><p className="food-caption">{state.phase === 'finished' ? '片刻满足' : `阶段 ${state.stage + 1} / ${food.stages.length}`}</p><h2>{state.phase === 'finished' ? '刚刚好' : item.name}</h2></div>{state.phase !== 'finished' && <p className="interaction-hint" id="food-hint"><span>{chewing ? '慢慢嚼，享受这一口' : '轻点品尝'}</span><span>拖动，换个角度</span></p>}</div>
@@ -165,9 +153,17 @@ export default function App() {
   const systemReduced = useSystemReducedMotion();
   const reducedMotion = settings.motion === 'reduced' || (settings.motion === 'system' && systemReduced);
   const [table, setTable] = useState(() => parseTable(window.location.search));
-  const [dining, setDining] = useState(() => parseDining(window.location.search));
+  const [dining, setDining] = useState<DiningChoice | undefined>(() => {
+    const search = window.location.search;
+    const choice = parseDining(search);
+    if (choice) return choice;
+    if (parseTable(search) && !new URLSearchParams(search).has('mode')) return { mode: 'dine-in', guests: 2 };
+  });
   const [cart, setCart] = useState(() => readCart(browserStorage()));
   const [order, setOrder] = useState(() => readOrder(browserStorage()));
+  const matchingOrder = order && dining && (dining.mode === 'takeaway'
+    ? order.dining?.mode === 'takeaway'
+    : order.dining?.mode !== 'takeaway' && Boolean(table) && order.table === table) ? order : null;
   const [selected, setSelected] = useState<MenuItem | null>(() => {
     const id = new URLSearchParams(window.location.search).get('item');
     return id ? menuItemById(id) ?? null : null;
@@ -175,7 +171,7 @@ export default function App() {
   const [screen, setScreen] = useState<OrderScreen>(() => {
     if (selected?.foodId && new URLSearchParams(window.location.search).get('view') === 'tasting') return 'tasting';
     if (selected) return 'detail';
-    if (order && order.id === window.history.state?.receipt && !cart.length) return 'result';
+    if (matchingOrder && matchingOrder.id === window.history.state?.receipt) return 'result';
     return dining ? 'menu' : 'welcome';
   });
   const [draft, setDraft] = useState<MenuItemDraft>(emptyDraft);
@@ -218,6 +214,11 @@ export default function App() {
   };
   const returnToMenu = () => setScreen(dining ? 'menu' : 'welcome');
   const openItem = (item: MenuItem) => { setSelected(item); setDraft(emptyDraft()); leaveMenu('detail'); };
+  const openRecentOrder = () => {
+    if (!matchingOrder) return;
+    window.history.replaceState({ ...window.history.state, receipt: matchingOrder.id }, '');
+    leaveMenu('result');
+  };
   const submit = () => {
     if (!dining || (dining.mode === 'dine-in' && !table) || !cart.length) return;
     const next = createDemoOrder(table, cart, new Date(), dining);
@@ -232,7 +233,7 @@ export default function App() {
   return <main className="ordering-app">
     {screen === 'welcome' && <OrderWelcome reducedMotion={reducedMotion} onChoose={chooseDining} />}
     {screen === 'menu' && <>
-      <MenuHome reducedMotion={reducedMotion} tools={<><HelpSheet /><SettingsSheet settings={settings} onChange={updateSettings} /></>} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
+      <MenuHome reducedMotion={reducedMotion} tools={<><HelpSheet /><SettingsSheet settings={settings} onChange={updateSettings} /></>} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} onRecentOrder={matchingOrder ? openRecentOrder : undefined} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
     </>}
     {screen === 'detail' && selected && <MenuItemDetail item={selected} reducedMotion={reducedMotion} draft={draft} onDraftChange={setDraft} onClose={returnToMenu} onTaste={() => setScreen('tasting')} onAdd={(choices, quantity, note) => {
       setCart(current => addLine(current, selected, Object.entries(choices).map(([groupId, choiceId]) => ({ groupId, choiceId })), quantity, note));
@@ -240,7 +241,7 @@ export default function App() {
     }} />}
     {screen === 'cart' && <CartSheet lines={cart} onClose={() => setScreen('menu')} onQuantity={(id, quantity) => setCart(current => setLineQuantity(current, id, quantity))} onReview={() => { setError(''); setScreen('review'); }} />}
     {screen === 'review' && <OrderReview table={table} dining={dining} lines={cart} onBack={() => setScreen('cart')} onSubmit={submit} onDemoTable={demoTable} error={error} />}
-    {screen === 'result' && order && <OrderResult order={order} onMenu={() => { window.history.replaceState({ ...window.history.state, receipt: null }, ''); returnToMenu(); }} />}
+    {screen === 'result' && matchingOrder && <OrderResult order={matchingOrder} onMenu={() => { window.history.replaceState({ ...window.history.state, receipt: null }, ''); returnToMenu(); }} />}
     {error && screen !== 'review' && <p className="order-storage-error" role="alert">{error}</p>}
   </main>;
 }

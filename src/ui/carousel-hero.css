@@ -50,7 +50,13 @@
 .food-loop-caption > span { font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
 .food-carousel-hero .food-loop-item:focus-visible { outline: none; }
 .food-loop-item:focus-visible strong { outline: 2px solid currentColor; outline-offset: 3px; }
-.food-loop-item:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.food-loop-item[data-active="true"] .food-loop-caption {
+  background: #fff3d994;
+  border-radius: 8px;
+  padding: 6px 3px;
+  margin: -6px 8px 0;
+}
+.food-loop-item[data-active="true"] strong { text-decoration: underline; text-underline-offset: 3px; font-weight: 900; }
 .food-carousel-hero .food-loop-play {
   position: absolute;
   top: 5px;

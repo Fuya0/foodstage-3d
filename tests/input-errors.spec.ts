@@ -39,7 +39,7 @@ test('renderer fallback retry remains clickable inside food input', async ({ pag
     let failOnce = true;
     const getContext = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (type: string, ...args: any[]) {
-      if (failOnce && (type === 'webgl2' || type === 'webgl' || type === 'experimental-webgl')) {
+      if (failOnce && this.closest('[data-testid="experience"]') && (type === 'webgl2' || type === 'webgl' || type === 'experimental-webgl')) {
         failOnce = false;
         throw new Error('forced renderer failure');
       }
@@ -72,9 +72,9 @@ test('WebGL context loss provides a recovery action', async ({ page }) => {
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
   await page.getByRole('button', { name: '虚拟试吃' }).click();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'idle');
-  await page.locator('canvas').evaluate(canvas => canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
+  await page.locator('canvas[data-engine]').evaluate(canvas => canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
   await expect(page.getByRole('button', { name: '重试画面' })).toBeVisible();
   await page.getByRole('button', { name: '重试画面' }).click();
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas[data-engine]')).toBeVisible();
   await expect(page.getByRole('button', { name: '重试画面' })).toHaveCount(0);
 });

@@ -13,11 +13,11 @@ test('food remains interactive after vertical and horizontal flips', async ({ pa
   await page.mouse.move(x, y);
   await page.mouse.down();
   await page.mouse.move(x + 360, y + 370, { steps: 30 });
-  await expect.poll(() => page.locator('canvas').evaluate(canvas => Number(canvas.dataset.rotationX))).toBeGreaterThan(Math.PI);
-  await expect.poll(() => page.locator('canvas').evaluate(canvas => Number(canvas.dataset.rotationY))).toBeGreaterThan(Math.PI);
+  await expect.poll(() => page.locator('canvas[data-engine]').evaluate(canvas => Number(canvas.dataset.rotationX))).toBeGreaterThan(Math.PI);
+  await expect.poll(() => page.locator('canvas[data-engine]').evaluate(canvas => Number(canvas.dataset.rotationY))).toBeGreaterThan(Math.PI);
   await page.mouse.up();
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '0');
-  await page.screenshot({ path: 'docs/screenshots/food-flipped.png' });
+  await page.screenshot({ path: '.codex/screenshots/food-flipped.png' });
   await food.focus();
   await page.keyboard.press('Space');
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');

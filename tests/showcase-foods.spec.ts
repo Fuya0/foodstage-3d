@@ -18,13 +18,13 @@ for (const width of [390, 1440]) {
       await response;
       const experience = page.getByTestId('experience');
       const area = page.getByRole('button', { name: food.name, exact: true });
-      const canvas = page.locator('canvas');
+      const canvas = page.locator('canvas[data-engine]');
       for (let stage = 0; stage < 4; stage++) {
         await expect(experience).toHaveAttribute('data-stage', String(stage));
         await expect(experience).toHaveAttribute('data-phase', 'idle');
         await expect(area).toHaveAttribute('data-hit-ready', 'true');
         await expect(canvas).toHaveAttribute('data-stage-blend', '1');
-        await page.screenshot({ path: `artifacts/showcase-browser/${food.id}-${width}-stage-${stage}.png` });
+        await page.screenshot({ path: `.codex/screenshots/showcase-browser/${food.id}-${width}-stage-${stage}.png` });
         for (let bite = 0; bite < 3; bite++) {
           await expect(area).toHaveAttribute('aria-disabled', 'false');
           await area.focus();
