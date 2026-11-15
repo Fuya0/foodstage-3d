@@ -1,5 +1,4 @@
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { Pause, Play } from 'lucide-react';
+import { useLayoutEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import { CarouselModels } from './CarouselModels';
 import './carousel-hero.css';
 
@@ -43,7 +42,6 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
   const focusedIndex = useRef<number | null>(null);
   const keyboardFocus = useRef(false);
   const redraw = useRef<() => void>(() => {});
-  const [paused, setPaused] = useState(false);
 
   useLayoutEffect(() => {
     const el = viewport.current;
@@ -83,7 +81,7 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
       scene.redraw?.();
     }
     function advancing() {
-      return visible && !document.hidden && !paused && !reducedMotion && !keyboardFocus.current && !pointer.current;
+      return visible && !document.hidden && !reducedMotion && !keyboardFocus.current && !pointer.current;
     }
     function tick(now: number) {
       frame = 0;
@@ -128,7 +126,7 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
       cancelAnimationFrame(frame);
       redraw.current = () => {};
     };
-  }, [items, paused, reducedMotion]);
+  }, [items, reducedMotion]);
 
   function pointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
@@ -210,9 +208,5 @@ export default function CarouselHero<Item extends FoodSlide>({ items, reducedMot
         <span className="food-loop-caption"><strong>{item.title}</strong><span>{item.subtitle}</span></span>
       </button>)}
     </div>
-    {!reducedMotion && <button type="button" className="food-loop-play" aria-label={paused ? '继续滚动' : '暂停滚动'}
-      onClick={() => setPaused(value => !value)}>
-      {paused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-    </button>}
   </div>;
 }

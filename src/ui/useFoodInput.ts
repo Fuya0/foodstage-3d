@@ -1,6 +1,6 @@
 import { useCallback, useRef, type PointerEvent } from 'react';
 import { beginGesture, moveGesture, endGesture, isTap, type Gesture } from '../core/gesture';
-import type { Motion } from '../scene/motion';
+import { DRAG_RADIANS_PER_PIXEL, rotateMotion, type Motion } from '../scene/motion';
 import type { HitTest } from '../scene/Scene';
 
 export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null>, playable: boolean, bite: () => void, sensitivity: number, zoomBy: (factor: number) => void) {
@@ -28,7 +28,6 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
       if (event.target instanceof Element && event.target.closest('button, a, input, [data-no-drag]')) return;
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      motion.idle = 0;
       // Capture even a miss so an outside release always clears tracked pointers.
       event.currentTarget.setPointerCapture(event.pointerId);
       if (pointers.current.size > 1) {
@@ -51,18 +50,14 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
           return;
         }
       }
-      if (event.pointerType !== 'touch' && !event.buttons) {
-        const box = event.currentTarget.getBoundingClientRect();
-        motion.hoverYaw = ((event.clientX - box.left) / box.width - 0.5) * 0.28;
-        motion.hoverPitch = ((event.clientY - box.top) / box.height - 0.5) * 0.16;
-      }
       const pointer = active.current;
       if (!pointer || pointer.id !== event.pointerId) return;
       pointer.gesture = moveGesture(pointer.gesture, event.clientX, event.clientY);
       const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
       const dt = Math.max(0.008, (event.timeStamp - pointer.time) / 1000);
-      motion.x += dy * 0.009 * sensitivity; motion.y += dx * 0.009 * sensitivity;
-      motion.vx = dy * 0.009 * sensitivity / dt; motion.vy = dx * 0.009 * sensitivity / dt;
+      const gain = DRAG_RADIANS_PER_PIXEL * sensitivity;
+      rotateMotion(motion, dy * gain, dx * gain);
+      motion.vx = dy * gain / dt; motion.vy = dx * gain / dt;
       pointer.x = event.clientX; pointer.y = event.clientY; pointer.time = event.timeStamp;
     },
     onPointerUp(event: PointerEvent<HTMLDivElement>) {
@@ -73,9 +68,8 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
       if (playable && isTap(endGesture(pointer.gesture, event.clientX, event.clientY, event.timeStamp))) bite();
       if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     },
-    onPointerLeave() { motion.hoverYaw = 0; motion.hoverPitch = 0; },
-    onPointerCancel(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); clear(); },
-    onLostPointerCapture(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); if (active.current?.id === event.pointerId) clear(); },
+    onPointerCancel(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); clear(); motion.vx = 0; motion.vy = 0; },
+    onLostPointerCapture(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); if (active.current?.id === event.pointerId) { clear(); motion.vx = 0; motion.vy = 0; } },
     onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
       if (event.target !== event.currentTarget || (event.key !== ' ' && event.key !== 'Enter')) return;
       event.preventDefault(); if (playable && !event.repeat) bite();

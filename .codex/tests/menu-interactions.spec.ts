@@ -25,6 +25,11 @@ for (const width of [390, 1440]) {
     await page.mouse.down();
     await page.mouse.move(x, y + 90, { steps: 8 });
     await page.mouse.up();
+    // Three strokes reach a full turn at the lower gain while staying inside the mobile stage.
+    await page.mouse.move(x, y - 90);
+    await page.mouse.down();
+    await page.mouse.move(x, y + 90, { steps: 8 });
+    await page.mouse.up();
     const fullTurn = Number(await preview.getAttribute('data-pitch'));
     expect(fullTurn).toBeGreaterThan(2 * Math.PI);
     expect(fullTurn).toBeGreaterThan(pitch + Math.PI / 2);

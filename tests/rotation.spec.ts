@@ -12,7 +12,7 @@ test('food remains interactive after vertical and horizontal flips', async ({ pa
   // Pointer capture allows a >180-degree drag even outside the original food silhouette.
   await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(x + 360, y + 370, { steps: 30 });
+  await page.mouse.move(x + 480, y + 480, { steps: 30 });
   await expect.poll(() => page.locator('canvas[data-engine]').evaluate(canvas => Number(canvas.dataset.rotationX))).toBeGreaterThan(Math.PI);
   await expect.poll(() => page.locator('canvas[data-engine]').evaluate(canvas => Number(canvas.dataset.rotationY))).toBeGreaterThan(Math.PI);
   await page.mouse.up();

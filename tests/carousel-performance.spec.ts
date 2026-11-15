@@ -55,11 +55,11 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 1000
     await expect(strip.locator('[data-active="true"] strong')).toHaveCSS('text-decoration-line', 'underline');
     await page.mouse.move(0, 0);
     await expect(strip.locator('[data-active="true"]')).toHaveCount(0);
-    await page.getByRole('button', { name: '暂停滚动' }).click();
-    const pausedPosition = await item.evaluate(el => el.getBoundingClientRect().left);
+    await expect(page.getByRole('button', { name: /暂停滚动|继续滚动/ })).toHaveCount(0);
+    await strip.press('Home');
+    const focusedPosition = await item.evaluate(el => el.getBoundingClientRect().left);
     await page.waitForTimeout(200);
-    expect(await item.evaluate(el => el.getBoundingClientRect().left)).toBe(pausedPosition);
-    await page.getByRole('button', { name: '继续滚动' }).click();
+    expect(await item.evaluate(el => el.getBoundingClientRect().left)).toBe(focusedPosition);
     await page.mouse.move(window.x + 20, window.y + 80);
     await strip.focus();
     await page.keyboard.press('End');

@@ -17,6 +17,8 @@ export interface MenuHomeProps {
   onOpen: (item: MenuItem) => void;
   onCart: () => void;
   cartCount: number;
+  cartAdded?: boolean;
+  onCartFeedbackEnd?: () => void;
   total: number;
   onDemoTable: () => void;
   category?: string;
@@ -24,7 +26,7 @@ export interface MenuHomeProps {
 }
 const price = (cents: number) => `¥${(cents / 100).toFixed(2)}`;
 
-export function MenuHome({ table, dining, onChooseDining, onRecentOrder, items, onOpen, onCart, cartCount, total, onDemoTable, tools, category: selectedCategory, onCategoryChange, reducedMotion }: MenuHomeProps) {
+export function MenuHome({ table, dining, onChooseDining, onRecentOrder, items, onOpen, onCart, cartCount, total, onDemoTable, tools, category: selectedCategory, onCategoryChange, reducedMotion = false, cartAdded = false, onCartFeedbackEnd }: MenuHomeProps) {
   const [localCategory, setLocalCategory] = useState('全部');
   const category = selectedCategory ?? localCategory;
   const setCategory = (value: string) => {
@@ -41,7 +43,7 @@ export function MenuHome({ table, dining, onChooseDining, onRecentOrder, items, 
       title: item.name,
       subtitle: price(item.price),
     })), [items]);
-  return <main className="ordering-menu">
+  return <main className="ordering-menu" data-reduced-motion={reducedMotion}>
     <header className="ordering-topbar">
       <a className="ordering-wordmark" href="#restaurant-menu" aria-label="食刻菜单"><UtensilsCrossed aria-hidden="true" size={24} /><span>食刻</span></a>
       <div className="ordering-header-actions">{dining && <button className="ordering-dining-choice ordering-dining-choice--mode" onClick={onChooseDining} aria-label={`更改用餐方式，当前${diningLabel(dining)}`}><span className="ordering-table-label">{diningLabel(dining)}</span><ChevronDown size={14} aria-hidden="true" /></button>}{dining?.mode !== 'takeaway' && (table || !dining) && <span className="ordering-table"><MapPin size={22} strokeWidth={1.8} aria-hidden="true" /><span className="ordering-table-label">{table ? `${table} 桌` : '未选桌号'}</span></span>}<div className="ordering-tools">{tools}</div></div>
@@ -71,6 +73,6 @@ export function MenuHome({ table, dining, onChooseDining, onRecentOrder, items, 
       </section>
 
     </div>
-    <footer className="ordering-cart-dock"><div className="ordering-cart-inner"><div className="ordering-cart-amount"><span className="ordering-bag"><ShoppingBag size={24} aria-hidden="true" />{cartCount > 0 && <b>{cartCount}</b>}</span><div><strong>{price(total)}</strong><span>{cartCount ? `已选 ${cartCount} 件菜品` : '未选菜品'}</span></div></div><button onClick={onCart} aria-label={`查看购物车，${cartCount} 件菜品`}>查看购物车<ArrowUpRight size={18} aria-hidden="true" /></button></div></footer>
+    <footer className="ordering-cart-dock"><div className="ordering-cart-inner"><div className="ordering-cart-amount"><span className="ordering-bag"><ShoppingBag size={24} aria-hidden="true" />{cartCount > 0 && <b className={cartAdded && !reducedMotion ? 'is-added' : undefined} onAnimationEnd={event => { if (event.animationName === 'cart-count-added') onCartFeedbackEnd?.(); }}>{cartCount}</b>}</span><div><strong>{price(total)}</strong><span>{cartCount ? `已选 ${cartCount} 件菜品` : '未选菜品'}</span></div></div><button onClick={onCart} aria-label={`查看购物车，${cartCount} 件菜品`}>查看购物车<ArrowUpRight size={18} aria-hidden="true" /></button></div></footer>
   </main>;
 }

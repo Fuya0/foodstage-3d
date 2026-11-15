@@ -107,6 +107,83 @@ describe('AssetStore', () => {
     expect(current.getSnapshot()[0]).toEqual({ status: 'ready', asset: 'new' });
   });
 
+  it('aborts the active download and does not preload after a late result', async () => {
+    const pending = deferred<string>();
+    const calls: number[] = [];
+    let signal!: AbortSignal;
+    const store = new AssetStore(3, (index, currentSignal) => {
+      calls.push(index);
+      signal = currentSignal;
+      return pending.promise;
+    });
+    const request = store.load(0);
+    await flush();
+    store.stop();
+    store.stop();
+    expect(signal.aborted).toBe(true);
+    expect(store.getSnapshot().map(entry => entry.status)).toEqual(['pending', 'pending', 'pending']);
+    pending.resolve('obsolete');
+    await request;
+    await flush();
+    expect(calls).toEqual([0]);
+    expect(store.getSnapshot()[0]).toEqual({ status: 'pending' });
+  });
+
+  it('stops a background download while preserving ready assets and can resume', async () => {
+    const pending = deferred<string>();
+    const calls: number[] = [];
+    const signals: AbortSignal[] = [];
+    const store = new AssetStore(3, (index, signal) => {
+      calls.push(index);
+      signals.push(signal);
+      return calls.length === 2 ? pending.promise : Promise.resolve(`asset-${index}`);
+    });
+    await store.load(0);
+    await flush();
+    expect(calls).toEqual([0, 1]);
+    const ready = store.getSnapshot()[0];
+    store.stop();
+    expect(signals[1]!.aborted).toBe(true);
+    pending.reject(new DOMException('Aborted', 'AbortError'));
+    await flush();
+    expect(calls).toEqual([0, 1]);
+    expect(store.getSnapshot()[0]).toBe(ready);
+    expect(store.getSnapshot()[1]).toEqual({ status: 'pending' });
+    await store.load(0);
+    await flush();
+    expect(calls).toEqual([0, 1, 1, 2]);
+    expect(store.getSnapshot().map(entry => entry.status)).toEqual(['ready', 'ready', 'ready']);
+  });
+
+  it('does not invoke the loader when stopped before the initial microtask', async () => {
+    let calls = 0;
+    const store = new AssetStore(2, async () => { calls++; return 'asset'; });
+    const request = store.load(0);
+    store.stop();
+    await request;
+    expect(calls).toBe(0);
+    expect(store.getSnapshot().map(entry => entry.status)).toEqual(['pending', 'pending']);
+  });
+
+  it('ignores obsolete results when a stopped request is replaced', async () => {
+    const old = deferred<string>();
+    const current = deferred<string>();
+    let calls = 0;
+    const store = new AssetStore(1, () => ++calls === 1 ? old.promise : current.promise);
+    const first = store.load(0);
+    await flush();
+    store.stop();
+    const second = store.load(0);
+    await flush();
+    old.resolve('obsolete');
+    await first;
+    expect(store.getSnapshot()[0]).toEqual({ status: 'loading' });
+    expect(store.load(0)).toBe(second);
+    current.resolve('current');
+    expect(await second).toEqual({ status: 'ready', asset: 'current' });
+    expect(calls).toBe(2);
+  });
+
   it('rejects invalid store sizes and indices synchronously before loading', () => {
     expect(() => new AssetStore(0, async () => '')).toThrow(RangeError);
     const store = new AssetStore(4, async () => '');

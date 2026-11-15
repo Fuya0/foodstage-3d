@@ -24,11 +24,11 @@ export function MenuItemDetail({ item, reducedMotion = false, onClose, onTaste, 
   }
   const quantity = Math.max(1, Math.min(99, Math.trunc(draft.quantity) || 1));
   const update = (patch: Partial<MenuItemDraft>) => onDraftChange({ ...draft, choices, quantity, ...patch });
-  return <main className="ordering-detail">
+  return <main className="ordering-detail" data-reduced-motion={reducedMotion}>
     <header className="ordering-detail-top"><button onClick={onClose}><ArrowLeft size={20} aria-hidden="true" />返回菜单</button></header>
     <div className="ordering-detail-layout">
       <section className="ordering-detail-art" aria-label={`${item.name}${item.foodId || item.modelFoodId || item.previewModelUrl ? '3D展示' : '图片'}`}>
-        <MenuFoodVisual item={item} variant="detail" />
+        <MenuFoodVisual item={item} variant="detail" reducedMotion={reducedMotion} />
       </section>
       <section className="ordering-detail-content" aria-labelledby="ordering-detail-title">
         <div className="ordering-detail-heading"><h1 id="ordering-detail-title">{item.name}</h1><p>{item.description}</p><strong className="ordering-price">{price(item.price)}<small> / {item.unit ?? '份'}</small></strong>{!item.available && <p className="ordering-unavailable" role="status">暂时售罄，看看其他好吃的吧</p>}</div>

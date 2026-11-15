@@ -57,18 +57,3 @@
   margin: -6px 8px 0;
 }
 .food-loop-item[data-active="true"] strong { text-decoration: underline; text-underline-offset: 3px; font-weight: 900; }
-.food-carousel-hero .food-loop-play {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #493017;
-}
-.food-loop-play:hover { background: #fff4d566; }

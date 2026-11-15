@@ -60,7 +60,6 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
   const [motion] = useState(createMotion);
   const [zoom, setZoom] = useState(1);
   const zoomBy = useCallback((factor: number) => {
-    motion.idle = 0;
     setZoom(current => Math.max(0.7, Math.min(2, current * factor)));
   }, [motion]);
   const [chewing, setChewing] = useState(false);
@@ -76,7 +75,10 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
   }, []);
   const handleContextLost = useCallback(() => { setContextLost(true); setHit(null); }, [setHit]);
 
-  useEffect(() => { void store.load(0); }, [store]);
+  useEffect(() => {
+    void store.load(0);
+    return () => store.stop();
+  }, [store]);
   useEffect(() => {
     if (settings.sound) { primeBiteAudio(food.sound); primeMilestoneAudio(); }
     else cancelBiteAudio();
@@ -127,7 +129,7 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
     <section className={`stage${state.phase === 'finished' ? ' empty' : ''}`} aria-label="食物空间">
       {state.phase === 'finished' && <div className="finished-state"><div className="finished-stamp">吃光了</div><h2>刚刚好</h2><p>这一刻，值得再来一次。</p></div>}
       {state.phase !== 'finished' && <SceneBoundary><div className="food-input" role="button" tabIndex={0} aria-label={item.name} aria-describedby="food-hint" aria-disabled={!playable} data-hit-ready={hitReady} {...input} onContextMenu={event => event.preventDefault()}>
-        {!contextLost && current?.status === 'ready' && base?.status === 'ready' && <Scene zoom={zoom} spinning interaction={food.interaction} asset={current.asset} base={base.asset} state={state} motion={motion} stage={food.stages[state.stage]!} reduced={reduced} dispatch={event => dispatch(event)} setHit={setHit} onContextLost={handleContextLost} />}
+        {!contextLost && current?.status === 'ready' && base?.status === 'ready' && <Scene zoom={zoom} interaction={food.interaction} asset={current.asset} base={base.asset} state={state} motion={motion} stage={food.stages[state.stage]!} reduced={reduced} dispatch={event => dispatch(event)} setHit={setHit} onContextLost={handleContextLost} />}
       </div></SceneBoundary>}
     </section>
     <footer className="action-dock">
@@ -160,6 +162,7 @@ export default function App() {
     if (parseTable(search) && !new URLSearchParams(search).has('mode')) return { mode: 'dine-in', guests: 2 };
   });
   const [cart, setCart] = useState(() => readCart(browserStorage()));
+  const [cartAdded, setCartAdded] = useState(false);
   const [order, setOrder] = useState(() => readOrder(browserStorage()));
   const matchingOrder = order && dining && (dining.mode === 'takeaway'
     ? order.dining?.mode === 'takeaway'
@@ -183,6 +186,9 @@ export default function App() {
   useEffect(() => {
     if (!saveCart(browserStorage(), cart)) setError('无法保存点单，请检查浏览器存储权限。当前选择仍保留在此页面。');
   }, [cart]);
+  useEffect(() => {
+    if (screen !== 'menu' || reducedMotion) setCartAdded(false);
+  }, [screen, reducedMotion]);
   useEffect(() => {
     const url = new URL(window.location.href);
     if (screen !== 'tasting') url.searchParams.delete('view');
@@ -233,10 +239,11 @@ export default function App() {
   return <main className="ordering-app">
     {screen === 'welcome' && <OrderWelcome reducedMotion={reducedMotion} onChoose={chooseDining} />}
     {screen === 'menu' && <>
-      <MenuHome reducedMotion={reducedMotion} tools={<><HelpSheet /><SettingsSheet settings={settings} onChange={updateSettings} /></>} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} onRecentOrder={matchingOrder ? openRecentOrder : undefined} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
+      <MenuHome reducedMotion={reducedMotion} cartAdded={cartAdded} onCartFeedbackEnd={() => setCartAdded(false)} tools={<><HelpSheet /><SettingsSheet settings={settings} onChange={updateSettings} /></>} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} onRecentOrder={matchingOrder ? openRecentOrder : undefined} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
     </>}
     {screen === 'detail' && selected && <MenuItemDetail item={selected} reducedMotion={reducedMotion} draft={draft} onDraftChange={setDraft} onClose={returnToMenu} onTaste={() => setScreen('tasting')} onAdd={(choices, quantity, note) => {
       setCart(current => addLine(current, selected, Object.entries(choices).map(([groupId, choiceId]) => ({ groupId, choiceId })), quantity, note));
+      setCartAdded(!reducedMotion);
       returnToMenu();
     }} />}
     {screen === 'cart' && <CartSheet lines={cart} onClose={() => setScreen('menu')} onQuantity={(id, quantity) => setCart(current => setLineQuantity(current, id, quantity))} onReview={() => { setError(''); setScreen('review'); }} />}
