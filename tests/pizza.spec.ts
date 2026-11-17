@@ -33,8 +33,7 @@ for (const width of [390, 1440]) {
     }
     await expect(experience).toHaveAttribute('data-phase', 'finished');
     await expect(page.getByText('吃光了', { exact: true })).toBeVisible();
-    const variant = width >= 768 ? 'models-desktop' : 'models-mobile';
-    for (let stage = 0; stage < 4; stage++) expect(loaded.has(`/${variant}/pepperoni-pizza-${stage}.glb`)).toBe(true);
+    for (let stage = 0; stage < 4; stage++) expect(loaded.has(`/models-runtime/pepperoni-pizza-${stage}.glb`)).toBe(true);
     expect(failures).toEqual([]);
   });
 }

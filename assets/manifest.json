@@ -2,9 +2,7 @@
   "schemaVersion": 1,
   "generatedAt": "2026-11-09T15:08:24.485664+00:00",
   "runtimeRoots": {
-    "mobile": "public/models-mobile",
-    "desktop": "public/models-desktop",
-    "buildSourceReference": "public/models (legacy source references; not loaded by current scene)"
+    "unified": "public/models-runtime"
   },
   "foods": [
     {
@@ -72,7 +70,7 @@
       "stageCount": 4,
       "stages": [
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -84,7 +82,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -96,7 +94,7 @@
           }
         },
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 0.8,
             "position": [
@@ -108,7 +106,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 0.65,
             "position": [
@@ -127,7 +125,7 @@
       "stageCount": 4,
       "stages": [
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -139,7 +137,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -151,7 +149,7 @@
           }
         },
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -163,7 +161,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -1663,5 +1661,328 @@
       },
       "presentation": "physical-size-stable"
     }
-  ]
+  ],
+  "runtimeFiles": [
+    {
+      "path": "public/models-runtime/burger-0.glb",
+      "sha256": "407fff4b0e9c73f1566e8f147518c5d7b27b63113e288f529762c8d2b04b6894",
+      "bytes": 3790360,
+      "dimensionsMm": [
+        65534000,
+        54454000,
+        65374000
+      ]
+    },
+    {
+      "path": "public/models-runtime/burger-1.glb",
+      "sha256": "2102dc08392607b0473844da385105f8afbb471d2f79c84449ebaebc1ff48764",
+      "bytes": 3087852,
+      "dimensionsMm": [
+        65534000,
+        51710000,
+        62470000
+      ]
+    },
+    {
+      "path": "public/models-runtime/burger-2.glb",
+      "sha256": "aa867493ecc652eed53a7f520fba2c4fd311ad95f0b963e611a6d04e3a885090",
+      "bytes": 3995024,
+      "dimensionsMm": [
+        65534000,
+        42516000,
+        60302000
+      ]
+    },
+    {
+      "path": "public/models-runtime/burger-3.glb",
+      "sha256": "dab4fe6cffcccc5373f15f4f39ea5db8696b2b563a542357984143efce13ddee",
+      "bytes": 4580312,
+      "dimensionsMm": [
+        65534000,
+        63430000,
+        40076000
+      ]
+    },
+    {
+      "path": "public/models-runtime/chocolate-brownie-0.glb",
+      "sha256": "63dac9c478a2ca602af601e50d20639a39513d6b177ae4c1587e03e7290a5220",
+      "bytes": 1773000,
+      "dimensionsMm": [
+        65534000,
+        27370000,
+        53166000
+      ]
+    },
+    {
+      "path": "public/models-runtime/chocolate-brownie-1.glb",
+      "sha256": "751c6277385ee44226b90bd8c1bf6fd2318b94319f1b5a647b95c0a15b0f303a",
+      "bytes": 1699716,
+      "dimensionsMm": [
+        60582000,
+        33740000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/chocolate-brownie-2.glb",
+      "sha256": "3aea592fd44f0a946a21f87b2e10bc1f418e60b351b161cc3bf1cc6511d3f1fe",
+      "bytes": 1581044,
+      "dimensionsMm": [
+        40388000,
+        33340000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/chocolate-brownie-3.glb",
+      "sha256": "e4549f9eceee4f5acc1ad454149816b888da75c0a58d40f9d8da375cd99ffd01",
+      "bytes": 1468336,
+      "dimensionsMm": [
+        20250000,
+        33436000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/coca-cola-0.glb",
+      "sha256": "f535710d7c3096477ca5e0bfcc0f8c24409f74784943cbd4faad2a1e37d675e6",
+      "bytes": 1173472,
+      "dimensionsMm": [
+        38350000,
+        65534000,
+        38298000
+      ]
+    },
+    {
+      "path": "public/models-runtime/coca-cola-no-sugar-0.glb",
+      "sha256": "17f724920defc195fa8ce1dd9248d7c84fd26856c29bd0e286310a7bb40209e9",
+      "bytes": 1184716,
+      "dimensionsMm": [
+        38174000,
+        65534000,
+        38086000
+      ]
+    },
+    {
+      "path": "public/models-runtime/crispy-chicken-0.glb",
+      "sha256": "04d7f59a430920431186658d8ded14056ad98c4a6feb22ce744ba137c34b9402",
+      "bytes": 2285136,
+      "dimensionsMm": [
+        47900000,
+        47244000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/crispy-chicken-1.glb",
+      "sha256": "4fb13b3afc8d482e24b5fd56f155911dd12488aa5538910e1a451017afea2af5",
+      "bytes": 1672964,
+      "dimensionsMm": [
+        65534000,
+        64806000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/crispy-chicken-2.glb",
+      "sha256": "e67dfb5b3e2f88b183ebf613df71126a57109a463022a47536c1a28e8f15ca9f",
+      "bytes": 1891060,
+      "dimensionsMm": [
+        63206000,
+        61398000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/crispy-chicken-3.glb",
+      "sha256": "c8f7c65211073de97a7e4b72c6919eab87a6ce2b98ef6b432a8ca1fde70dbea4",
+      "bytes": 1874760,
+      "dimensionsMm": [
+        33036000,
+        48188000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/fanta-orange-0.glb",
+      "sha256": "f2131e89a8a22644706e3358f5ba213c59f512caeb8da04c5691eba8be190ed5",
+      "bytes": 1330436,
+      "dimensionsMm": [
+        38946000,
+        65534000,
+        38870000
+      ]
+    },
+    {
+      "path": "public/models-runtime/lemon-soda-0.glb",
+      "sha256": "8dc62838bff8cc641dd86d7dc6055dad21451efbae6118037f51753a30b41514",
+      "bytes": 225144,
+      "dimensionsMm": [
+        65534000,
+        65534000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/lemon-soda-1.glb",
+      "sha256": "5e7ad83fe262b32ddd6f8c5b4bd681cf7fac257f0a64392eabaa458af4aa40e4",
+      "bytes": 225348,
+      "dimensionsMm": [
+        65534000,
+        65534000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/lemon-soda-2.glb",
+      "sha256": "f2cd1fd77a03f3ca2d233ec263777d24c22781dc39c2f46c8a2a9d982fc5b4e5",
+      "bytes": 225272,
+      "dimensionsMm": [
+        65534000,
+        65534000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/lemon-soda-3.glb",
+      "sha256": "4fadbd4e6cde97d6e32dfa2ec34a7a7330d291865a7a2032e9f4d02ba1c20bd4",
+      "bytes": 225268,
+      "dimensionsMm": [
+        65534000,
+        65534000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/mango-cheesecake-0.glb",
+      "sha256": "e6fbc11481d7260b13cec9bc060baa41cbc8976996fe17baa373f47af8d9c55c",
+      "bytes": 1749688,
+      "dimensionsMm": [
+        43652000,
+        32306000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/mango-cheesecake-1.glb",
+      "sha256": "42bebac19bd716576a574aaff0b92c7795868ecfdba186297143c4c546d71bcd",
+      "bytes": 1634060,
+      "dimensionsMm": [
+        52686000,
+        38964000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/mango-cheesecake-2.glb",
+      "sha256": "7984e6da73d21dfd892cca0c8dc7b61a3674639edadf032dbfe79c81e7cbbaa9",
+      "bytes": 1754232,
+      "dimensionsMm": [
+        65534000,
+        54470000,
+        65470000
+      ]
+    },
+    {
+      "path": "public/models-runtime/mango-cheesecake-3.glb",
+      "sha256": "ce67864185232dee027ec131ae38ed57cce9e40a85e4163239cc14b061b1047e",
+      "bytes": 2625988,
+      "dimensionsMm": [
+        54238000,
+        65534000,
+        44668000
+      ]
+    },
+    {
+      "path": "public/models-runtime/pepperoni-pizza-0.glb",
+      "sha256": "65e8c7ebbed1f8bc65e04cd1deff2e2458cdb1258a5975f4c650b26076b8274d",
+      "bytes": 1607960,
+      "dimensionsMm": [
+        65480000,
+        10666000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/pepperoni-pizza-1.glb",
+      "sha256": "bdb5a11345c12faa1ee395b9d290b288e19b1b582cb69080709a3de52cb2685b",
+      "bytes": 1438224,
+      "dimensionsMm": [
+        65534000,
+        6568000,
+        63136000
+      ]
+    },
+    {
+      "path": "public/models-runtime/pepperoni-pizza-2.glb",
+      "sha256": "22d1e490ea1023d2e974a4459f6d5b072e2f00d7a92dcdc9face14c399c147f6",
+      "bytes": 940988,
+      "dimensionsMm": [
+        65534000,
+        6608000,
+        31764000
+      ]
+    },
+    {
+      "path": "public/models-runtime/pepperoni-pizza-3.glb",
+      "sha256": "6422b65c4c21daca884f5a2a7e8c350d5874d6110c7b11aa4a99edbb2698518b",
+      "bytes": 1117948,
+      "dimensionsMm": [
+        65534000,
+        23732000,
+        58126000
+      ]
+    },
+    {
+      "path": "public/models-runtime/rosemary-fries-0.glb",
+      "sha256": "b3309fc3a16ec2d6577eb92e7e91dffcc2a245bf1284a37ecb2f6c4195590b15",
+      "bytes": 1812984,
+      "dimensionsMm": [
+        65534000,
+        34930000,
+        65448000
+      ]
+    },
+    {
+      "path": "public/models-runtime/rosemary-fries-1.glb",
+      "sha256": "f195e27e98cec983334beff11ddfb3181e1971a61a8b688c426f7d2c30d4f841",
+      "bytes": 1917368,
+      "dimensionsMm": [
+        65402000,
+        37290000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/rosemary-fries-2.glb",
+      "sha256": "a0b31bc34efdeef9c2a7ff49360ded1e7cff4dc136e3cb4c18a6b86637d2da9d",
+      "bytes": 1141344,
+      "dimensionsMm": [
+        65534000,
+        30652000,
+        65484000
+      ]
+    },
+    {
+      "path": "public/models-runtime/rosemary-fries-3.glb",
+      "sha256": "7e60c70d8eca3de3a7015be49329dcff3f32f10e8226bba825e8e6b123a0281d",
+      "bytes": 908152,
+      "dimensionsMm": [
+        64636000,
+        32494000,
+        65534000
+      ]
+    },
+    {
+      "path": "public/models-runtime/sprite-0.glb",
+      "sha256": "46b3d33d725d904536a283316a3f174c9425fc87873203739483f8829fce06c8",
+      "bytes": 1152080,
+      "dimensionsMm": [
+        38386000,
+        65534000,
+        38328000
+      ]
+    }
+  ],
+  "runtimeGeneratedAt": "2026-11-16T14:17:16.030812+00:00"
 }

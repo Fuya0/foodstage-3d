@@ -1,6 +1,6 @@
 import type { FoodInteraction } from '../data/foods';
 
-export const CHEW_SECONDS = 0.32;
+export const CHEW_SECONDS = 0.18;
 export const STAGE_BLEND_SECONDS = 0.16;
 export function stageBlend(age: number, reduced: boolean): number {
   if (reduced) return 1;
@@ -14,7 +14,7 @@ const rest = { x: 0, y: 0, roll: 0, scaleX: 1, scaleY: 1 };
 export function bitePose(age: number, strength: number, reduced: boolean, interaction: FoodInteraction = 'solid') {
   if (interaction === 'drink' || reduced || age >= CHEW_SECONDS || strength <= 0) return rest;
   // Two rounded jaw movements, followed by a gentle settle.
-  const pulse = Math.sin(Math.PI * Math.min(age / 0.16, 2)) ** 2;
+  const pulse = Math.sin(Math.PI * Math.min(age / (CHEW_SECONDS / 2), 2)) ** 2;
   const envelope = Math.max(0, 1 - age / CHEW_SECONDS) * strength;
   const squash = pulse * envelope;
   return {

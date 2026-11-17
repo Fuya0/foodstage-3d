@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from 'vitest';
 const covers = import.meta.glob('../../public/foods/*.{svg,png}', { eager: true, query: '?url', import: 'default' });
-const previewModels = import.meta.glob('../../public/models-mobile/*.glb', { query: '?url', import: 'default' });
+const previewModels = import.meta.glob('../../public/models-runtime/*.glb', { query: '?url', import: 'default' });
 import { menuItems, menuCategories, menuItemById } from './menu';
 import { foods } from './foods';
 
@@ -24,7 +24,11 @@ describe('restaurant menu', () => {
         expect(previewModels[`../../public${item.previewModelUrl}`]).toBeDefined();
       } else {
         expect(covers[`../../public${item.cover}`]).toBeDefined();
-        if (item.modelFoodId || item.foodId) expect(foods.some(food => food.id === (item.modelFoodId ?? item.foodId))).toBe(true);
+        if (item.modelFoodId || item.foodId) {
+          const food = foods.find(food => food.id === (item.modelFoodId ?? item.foodId));
+          expect(food).toBeDefined();
+          expect(previewModels[`../../public${food!.stages[0]!.url}`]).toBeDefined();
+        }
       }
       if (item.foodId) expect(foods.some(food => food.id === item.foodId)).toBe(true);
     }

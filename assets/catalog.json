@@ -66,7 +66,7 @@
       "stageCount": 4,
       "stages": [
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -78,7 +78,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -90,7 +90,7 @@
           }
         },
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 0.8,
             "position": [
@@ -102,7 +102,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 0.65,
             "position": [
@@ -121,7 +121,7 @@
       "stageCount": 4,
       "stages": [
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -133,7 +133,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -145,7 +145,7 @@
           }
         },
         {
-          "bites": 5,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [
@@ -157,7 +157,7 @@
           }
         },
         {
-          "bites": 6,
+          "bites": 3,
           "calibration": {
             "scale": 1,
             "position": [

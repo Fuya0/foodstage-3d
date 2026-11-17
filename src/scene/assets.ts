@@ -7,13 +7,6 @@ import type { FoodStage } from '../data/foods';
 import { applyFoodMaterials } from './food-materials';
 export interface ModelAsset { scene: Group; center: Vector3; size: Vector3 }
 
-/** Pick an asset variant once when the play screen mounts, keeping the cache stable. */
-export function modelUrlForViewport(url: string, viewportWidth: number): string {
-  return viewportWidth >= 768 && /^\/models-mobile\/[a-z0-9]+(?:-[a-z0-9]+)*-[0-9]+\.glb$/.test(url)
-    ? url.replace('/models-mobile/', '/models-desktop/')
-    : url;
-}
-
 function disposeCancelledModel(scene: Group): void {
   const geometries = new Set<BufferGeometry>();
   const materials = new Set<Material>();
@@ -37,11 +30,10 @@ function disposeCancelledModel(scene: Group): void {
 }
 
 export function createModelStore(stages: readonly FoodStage[] = manifest) {
-  const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   return new AssetStore<ModelAsset>(stages.length, async (index, signal) => {
-    const url = modelUrlForViewport(stages[index]!.url, viewportWidth);
+    const url = stages[index]!.url;
     // Isolate the session's fetch: Three's FileLoader shares same-URL requests with menu previews.
     const response = await fetch(url, { signal });
     if (!response.ok) throw new Error(`Failed to load model ${url}: ${response.status}`);

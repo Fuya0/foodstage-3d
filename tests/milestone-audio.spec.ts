@@ -24,7 +24,7 @@ test('real milestone assets decode, three transitions and one victory play per m
   const area = page.getByRole('button', { name: '经典汉堡' });
   for (let stage = 0; stage < 4; stage++) {
     await expect(page.getByTestId('experience')).toHaveAttribute('data-stage', String(stage));
-    for (let i = 0; i < (stage % 2 === 0 ? 5 : 6); i++) {
+    for (let i = 0; i < 3; i++) {
       await expect(area).toHaveAttribute('aria-disabled', 'false');
       await area.focus();
       await page.keyboard.press('Space');

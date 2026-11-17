@@ -2,20 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { foodById, foods, soundForStage } from './foods';
 
 describe('food definitions', () => {
-  it('has four stage definitions for crispy chicken', () => {
+  it('uses four stages of three bites for every food', () => {
+    for (const entry of foods) {
+      expect(entry.stages, entry.id).toHaveLength(4);
+      expect(entry.stages.map(stage => stage.bites), entry.id).toEqual([3, 3, 3, 3]);
+      expect(entry.stages.every(stage => /^\/models-runtime\/[a-z0-9-]+\.glb$/.test(stage.url)), entry.id).toBe(true);
+    }
     const food = foodById('crispy-chicken');
     expect(food.stages).toHaveLength(4);
     expect(food.stages.map(stage => stage.bites)).toEqual([3, 3, 3, 3]);
     expect(food.stages.map(stage => stage.url)).toEqual([
-      '/models-mobile/crispy-chicken-0.glb', '/models-mobile/crispy-chicken-1.glb',
-      '/models-mobile/crispy-chicken-2.glb', '/models-mobile/crispy-chicken-3.glb',
+      '/models-runtime/crispy-chicken-0.glb', '/models-runtime/crispy-chicken-1.glb',
+      '/models-runtime/crispy-chicken-2.glb', '/models-runtime/crispy-chicken-3.glb',
     ]);
   });
   it('registers the drink and dessert as independent four-stage foods', () => {
     for (const id of ['lemon-soda', 'mango-cheesecake']) {
       const food = foodById(id);
       expect(food.stages).toHaveLength(4);
-      expect(food.stages.every(stage => stage.url.startsWith(`/models-mobile/${id}-`))).toBe(true);
+      expect(food.stages.every(stage => stage.url.startsWith(`/models-runtime/${id}-`))).toBe(true);
     }
     const soda = foodById('lemon-soda');
     expect(soda.interaction).toBe('drink');

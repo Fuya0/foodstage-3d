@@ -128,7 +128,7 @@ function playMilestoneBuffer(context: AudioContext, buffer: AudioBuffer, kind: '
     gain.connect(context.destination);
     cleanup = trackSource(source, nodes);
     activeMilestones.add(source);
-    // The caller waits for chewing and the finished UI before requesting this cue.
+    // Cues follow stage/finished UI and remain independent from mouthful replacement.
     source.start(context.currentTime);
   } catch {
     try { source?.stop(); } catch { /* May never have started. */ }

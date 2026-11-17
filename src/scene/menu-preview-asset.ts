@@ -47,8 +47,8 @@ export function loadPreview(foodId: string, previewModelUrl?: string): Promise<P
   const existing = models.get(cacheKey);
   if (existing) return existing;
   const request = (async () => {
-    // Stage-based foods always use their small variant here, including on desktop.
-    const url = previewModelUrl ?? foodById(foodId).stages[0]?.url.replace('/models-desktop/', '/models-mobile/');
+    // Preview and tasting resolve the same canonical stage asset.
+    const url = previewModelUrl ?? foodById(foodId).stages[0]?.url;
     if (!url) throw new Error('Missing food model');
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const gltf = await withPreviewRequest(() => loader.loadAsync(url));

@@ -16,10 +16,10 @@ for (const width of [390, 1440]) {
       page.on('pageerror', error => errors.push(error.message));
       page.on('requestfailed', request => { if (request === first) aborted = true; });
       page.on('request', request => {
-        const match = /\/models-(?:mobile|desktop)\/burger-([0-3])\.glb/.exec(request.url());
+        const match = /\/models-runtime\/burger-([0-3])\.glb/.exec(request.url());
         if (match && Number(match[1]) > stage) later.push(new URL(request.url()).pathname);
       });
-      await page.route(`**/models-*/burger-${stage}.glb`, async route => {
+      await page.route(`**/models-runtime/burger-${stage}.glb`, async route => {
         if (!first) { first = route.request(); sawFirst(); await gate; }
         await route.continue().catch(() => {});
       });

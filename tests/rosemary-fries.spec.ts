@@ -21,15 +21,19 @@ for (const width of [390, 1440]) {
       await expect(input).toHaveAttribute('data-hit-ready', 'true');
       await expect(page.locator('canvas[data-engine]')).toHaveAttribute('data-stage-blend', '1');
       await page.screenshot({ path: `.codex/screenshots/fries-only-20261106/screenshots/${width}-stage-${stage}.png` });
-      if (stage === 3) break;
-      for (let bite = 0; bite < [5, 6, 5][stage]!; bite++) {
+      for (let bite = 0; bite < 3; bite++) {
         await expect(input).toHaveAttribute('aria-disabled', 'false');
         await input.focus();
         await page.keyboard.press('Space');
+        if (bite < 2) {
+          await expect(experience).toHaveAttribute('data-stage', String(stage));
+          await expect(experience).toHaveAttribute('data-bites', String(bite + 1));
+        }
       }
     }
-    const variant = width >= 768 ? 'models-desktop' : 'models-mobile';
-    for (let stage = 0; stage < 4; stage++) expect(loaded.has(`/${variant}/rosemary-fries-${stage}.glb`)).toBe(true);
+    await expect(page.getByRole('button', { name: '再吃一次' })).toBeVisible();
+    await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    for (let stage = 0; stage < 4; stage++) expect(loaded.has(`/models-runtime/rosemary-fries-${stage}.glb`)).toBe(true);
     expect(failures).toEqual([]);
   });
 }

@@ -31,10 +31,10 @@ describe('bite effects', () => {
     expect(stageBlend(0, true)).toBe(1);
   });
   it('recoils visibly, then settles exactly at rest without moving the pivot', () => {
-    const pose = bitePose(0.08, 1, false);
+    const pose = bitePose(0.045, 1, false);
     expect(pose.scaleY).toBeLessThan(0.97);
     expect(Math.abs(pose.x)).toBeGreaterThan(0.0005);
-    expect(CHEW_SECONDS).toBe(0.32);
+    expect(bitePose(0.2, 1, false)).toEqual({ x: 0, y: 0, roll: 0, scaleX: 1, scaleY: 1 });
     expect(bitePose(CHEW_SECONDS, 1, false).scaleY).toBe(1);
     expect(bitePose(0.75, 1, false)).toEqual({ x: 0, y: 0, roll: 0, scaleX: 1, scaleY: 1 });
     expect(bitePose(0.04, 1, true)).toEqual(bitePose(0.75, 1, false));

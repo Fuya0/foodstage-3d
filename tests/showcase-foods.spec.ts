@@ -10,8 +10,7 @@ for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
       const errors: string[] = [];
       page.on('pageerror', error => errors.push(error.message));
-      const variant = width < 768 ? 'mobile' : 'desktop';
-      const response = page.waitForResponse(r => r.url().includes(`/models-${variant}/${food.id}-0.glb`) && r.ok());
+      const response = page.waitForResponse(r => r.url().includes(`/models-runtime/${food.id}-0.glb`) && r.ok());
       await page.goto('/?mode=dine-in&guests=2');
       await page.getByRole('button', { name: `查看${food.name}`, exact: true }).click();
       await page.getByRole('button', { name: '虚拟试吃' }).click();

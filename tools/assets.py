@@ -12,7 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+# Optional local archive variants; never used to select production models.
 VARIANTS = ('mobile', 'desktop')
+RUNTIME_ROOTS = {'unified': 'public/models-runtime'}
+RUNTIME_PATH = r'public/models-runtime/[a-z0-9]+(?:-[a-z0-9]+)*-[0-9]+\.glb'
 
 
 def safe_path(root: Path, relative: str) -> Path:
@@ -119,16 +122,18 @@ def inventory(repo: Path = ROOT) -> dict:
             source_path = safe_path(repo, f"assets/{food['id']}/source/{stage}.glb")
             source = {'path': source_path.relative_to(repo).as_posix(), 'sha256': sha256(source_path), 'bytes': source_path.stat().st_size} if source_path.exists() else None
             records.append({'foodId': food['id'], 'stage': stage, 'sourceKind': 'existing-project-asset', 'processing': ['Portable GLB; see asset-specific provenance'], 'notes': 'Dimensions are union of mesh-local POSITION bounds; node transforms and scene reachability are not applied.', 'source': source, 'variants': variants, **food['stages'][stage]})
-    manifest = {'schemaVersion': 1, 'generatedAt': datetime.now(timezone.utc).isoformat(), 'runtimeRoots': {'mobile': 'public/models-mobile', 'desktop': 'public/models-desktop', 'buildSourceReference': 'public/models (legacy source references; not loaded by current scene)'}, 'foods': catalog['foods'], 'files': records}
-    # Preserve provenance already recorded by a processing pipeline.
+    # Refresh optional archives without replacing the accepted runtime release or provenance.
     old_path = repo / 'assets/manifest.json'
-    if old_path.exists():
-        old = {(r['foodId'], r['stage']): r for r in json.loads(old_path.read_text(encoding='utf-8'))['files']}
-        for record in records:
-            previous = old.get((record['foodId'], record['stage']), {})
-            for key in ('sourceKind', 'processing', 'notes'):
-                if key in previous:
-                    record[key] = previous[key]
+    manifest = load_manifest(repo) if old_path.exists() else {}
+    old = {(r['foodId'], r['stage']): r for r in manifest.get('files', [])}
+    for record in records:
+        previous = old.get((record['foodId'], record['stage']), {})
+        for key in ('sourceKind', 'processing', 'notes'):
+            if key in previous:
+                record[key] = previous[key]
+    manifest.update(schemaVersion=1, generatedAt=datetime.now(timezone.utc).isoformat(),
+                    foods=catalog['foods'], files=records)
+    manifest.setdefault('runtimeRoots', dict(RUNTIME_ROOTS))
     old_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return manifest
 
@@ -173,6 +178,79 @@ def verify(manifest: dict | None = None, repo: Path = ROOT, check_runtime: bool 
     print(f'Verified {len(actual)} canonical GLBs' + (' and matching runtime files.' if check_runtime else '.'))
 
 
+def verify_runtime(manifest: dict | None = None, repo: Path = ROOT) -> None:
+    """Verify a runtime checkout without requiring optional local source archives."""
+    repo = repo.resolve()
+    manifest = load_manifest(repo) if manifest is None else manifest
+    roots = RUNTIME_ROOTS
+    if manifest.get('schemaVersion') != 1:
+        raise ValueError('Invalid runtime manifest schema')
+    runtime_roots = manifest.get('runtimeRoots')
+    if runtime_roots != roots:
+        raise ValueError('Invalid runtime roots')
+    items = manifest.get('runtimeFiles')
+    if not isinstance(items, list) or not items:
+        raise ValueError('Missing runtimeFiles list in final manifest')
+    catalog = load_catalog(repo)
+    expected = {f"{roots['unified']}/{runtime_name(food, stage)}"
+                for food in catalog['foods'] for stage in range(food['stageCount'])}
+    names = set()
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError('Invalid runtime file metadata')
+        name = item.get('path')
+        if not isinstance(name, str) or not re.fullmatch(RUNTIME_PATH, name):
+            raise ValueError(f'Unsafe runtime path: {name}')
+        safe_path(repo, name)
+        if name in names:
+            raise ValueError(f'Duplicate runtime manifest entry: {name}')
+        names.add(name)
+        dimensions = item.get('dimensionsMm')
+        if (not isinstance(item.get('sha256'), str) or not re.fullmatch(r'[0-9a-f]{64}', item['sha256'])
+                or type(item.get('bytes')) is not int or item['bytes'] <= 0
+                or not isinstance(dimensions, list) or len(dimensions) != 3
+                or any(type(value) not in (int, float) or not math.isfinite(value) or value < 0 for value in dimensions)):
+            raise ValueError(f'Invalid runtime file metadata: {name}')
+    if not expected.issubset(names):
+        raise ValueError(f'Runtime catalog coverage mismatch: missing={expected - names}')
+    for item in items:
+        path = safe_path(repo, item['path'])
+        if not path.is_file(): raise ValueError(f'Missing runtime asset: {path}')
+        if sha256(path) != item['sha256']: raise ValueError(f'Runtime hash mismatch: {path}')
+        if path.stat().st_size != item['bytes']: raise ValueError(f'Runtime size mismatch: {path}')
+        # dimensions_mm also parses the GLB and rejects external buffer/image resources.
+        if dimensions_mm(path) != item['dimensionsMm']: raise ValueError(f'Runtime dimension mismatch: {path}')
+    installed = {path.relative_to(repo).as_posix() for relative in roots.values()
+                 for path in safe_path(repo, relative).rglob('*.glb') if path.is_file()}
+    if installed != names:
+        raise ValueError(f'Runtime file coverage mismatch: missing={names - installed}, extra={installed - names}')
+    print(f'Verified {len(names)} runtime GLBs without local source archives.')
+
+
+def inventory_runtime(repo: Path = ROOT) -> dict:
+    """Refresh final runtime metadata while retaining local archive provenance."""
+    repo = repo.resolve()
+    roots = RUNTIME_ROOTS
+    manifest_path = safe_path(repo, 'assets/manifest.json')
+    manifest = load_manifest(repo) if manifest_path.is_file() else {'schemaVersion': 1}
+    runtime_roots = manifest.get('runtimeRoots', {})
+    if not isinstance(runtime_roots, dict):
+        raise ValueError('Invalid runtime roots')
+    # Runtime roots are an exact release contract; archive pointers stay in provenance fields.
+    manifest['runtimeRoots'] = dict(roots)
+    manifest['foods'] = load_catalog(repo)['foods']
+    manifest['runtimeFiles'] = [
+        {'path': path.relative_to(repo).as_posix(), 'sha256': sha256(path),
+         'bytes': path.stat().st_size, 'dimensionsMm': dimensions_mm(path)}
+        for relative in roots.values() for path in sorted(safe_path(repo, relative).rglob('*.glb'))
+        if path.is_file()
+    ]
+    verify_runtime(manifest, repo)
+    manifest['runtimeGeneratedAt'] = datetime.now(timezone.utc).isoformat()
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return manifest
+
+
 def sync(manifest: dict | None = None, repo: Path = ROOT) -> None:
     repo = repo.resolve()
     manifest = manifest or load_manifest(repo)
@@ -188,7 +266,7 @@ def sync(manifest: dict | None = None, repo: Path = ROOT) -> None:
             if sha256(target) != item['sha256']: raise ValueError(f'Sync verification failed: {target}')
             results.append({'path': target.relative_to(repo).as_posix(), 'sha256': item['sha256'], 'bytes': target.stat().st_size})
     report = {'syncedAt': datetime.now(timezone.utc).isoformat(), 'files': results}
-    out = safe_path(repo, 'assets/reports/last-sync.json')
+    out = safe_path(repo, '.codex/assets/last-sync.json')
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     print(f'Synced {len(results)} GLBs.')
@@ -198,12 +276,24 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('command', choices=['inventory', 'verify', 'sync'])
     parser.add_argument('--repo', type=Path, default=ROOT)
-    parser.add_argument('--canonical-only', action='store_true', help='Skip runtime equality checks during verify')
+    verify_modes = parser.add_mutually_exclusive_group()
+    verify_modes.add_argument('--canonical-only', action='store_true', help='Skip runtime equality checks during strict verify')
+    verify_modes.add_argument('--runtime-only', action='store_true', help='Inventory or verify final runtime files without local source/processed archives')
     args = parser.parse_args()
+    if args.canonical_only and args.command != 'verify':
+        parser.error('--canonical-only applies only to verify')
+    if args.runtime_only and args.command not in ('inventory', 'verify'):
+        parser.error('--runtime-only applies only to inventory or verify')
     if args.command == 'inventory':
-        manifest = inventory(args.repo)
-        print(f"Inventoried {len(manifest['files']) * len(VARIANTS)} GLBs.")
-    elif args.command == 'verify': verify(repo=args.repo, check_runtime=not args.canonical_only)
+        if args.runtime_only:
+            manifest = inventory_runtime(args.repo)
+            print(f"Inventoried {len(manifest['runtimeFiles'])} runtime GLBs.")
+        else:
+            manifest = inventory(args.repo)
+            print(f"Inventoried {len(manifest['files']) * len(VARIANTS)} GLBs.")
+    elif args.command == 'verify':
+        if args.runtime_only: verify_runtime(repo=args.repo)
+        else: verify(repo=args.repo, check_runtime=not args.canonical_only)
     else: sync(repo=args.repo)
 
 if __name__ == '__main__': main()

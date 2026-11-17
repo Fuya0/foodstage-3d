@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / 'tools/new_asset.py'
-VALID = ROOT / 'assets/classic-burger/processed/mobile/0.glb'
+VALID = ROOT / 'public/models-runtime/burger-0.glb'
 
 class NewAssetTests(unittest.TestCase):
     def test_refuses_overwrite_without_force(self):

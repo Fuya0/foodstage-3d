@@ -1,64 +1,65 @@
 # 食刻（FoodStage 3D）
 
-项目仓库：https://github.com/Fuya0/foodstage-3d
+[项目仓库](https://github.com/Fuya0/foodstage-3d)
 
-餐厅扫码点单演示程序，结合分类菜单、规格选择、购物车和本地订单回执。经典汉堡提供可旋转、可点击的 3D 虚拟试吃，试吃后回到菜品详情继续点单。
-
-这是纯前端演示：订单只保存在当前浏览器，不会发送到餐厅，不接支付、后厨或库存。
+餐厅扫码点单演示，结合分类菜单、菜品详情、规格选择、购物车、本地订单回执和可旋转、可点击的 3D 虚拟试吃。订单只保存在当前浏览器，不接支付、后厨或库存。
 
 ## 本地开发
 
-需要 Node.js 22.12+ 与 pnpm。
+需要 Node.js 22.12+；项目使用 pnpm 10.19.0 和 pnpm-lock.yaml。
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-打开终端输出的本地地址并加上 `/?table=A01`，模拟顾客扫描 A01 桌二维码。二维码内容就是部署后的完整菜单 URL 加 `?table=A01`；每桌替换为自己的桌号。无桌号时可以浏览菜单，确认订单前需选用演示桌号。手机与电脑在同一网络时，可以使用 `pnpm dev --host 0.0.0.0`，再从手机访问电脑的局域网地址。
+打开终端地址并加上 `/?table=A01` 模拟扫描 A01 桌二维码。无桌号时可以浏览菜单，确认订单前选择演示桌号。手机与电脑在同一网络时，可使用 `pnpm dev --host 0.0.0.0` 并访问电脑的局域网地址。
+
+安装依赖后，可直接使用仓库内的 CLI；本工作区没有全局 pnpm 时也适用：
 
 ```sh
-pnpm test
-pnpm typecheck
-pnpm build
-pnpm preview
-pnpm test:browser
-pnpm optimize:sample  # 仅生成 burger-0 试样
-pnpm optimize:models  # 生成 burger 四个移动端模型
-node scripts/optimize-models.mjs --food taco --sample --dry-run
+node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --strictPort
+node node_modules/typescript/bin/tsc --noEmit
+node node_modules/vitest/vitest.mjs run
+node node_modules/@playwright/test/cli.js test --workers=1 --output=.codex/test-results/browser
+python tools/assets.py verify --runtime-only
+node node_modules/vite/bin/vite.js build --outDir .codex/build
 ```
 
-`dist/` 是生产静态产物，包含模型文件。部署时保持完整目录结构。
+`pnpm test`、`pnpm typecheck`、`pnpm build`、`pnpm preview` 和 `pnpm test:browser` 也提供相应入口。标准 build 默认输出到 dist；本地检查、截图、报告及 AI 过程产物统一放在 .codex。部署时保持最终构建目录结构完整。
 
 ## 使用方式
 
-- 菜单包含经典汉堡、迷迭香薯条、鲜柠气泡饮及售罄菜品示例；分类筛选后打开详情，选规格、数量及备注，再加入点单。价格以整数分计算。
-- 购物车可修改数量和删除；确认页展示桌号及明细，提交后生成 `DEMO-…` 订单号。购物车和最近订单支持刷新恢复，浏览器存储不可用时保留当前购物车并提示重试。
-- 菜单数据在 `src/data/menu.ts`，与 3D 食物素材分离。没有模型的菜品也可正常点单；只有关联 `foodId` 的经典汉堡提供“虚拟试吃”。
-- 试验功能：菜单中点击汉堡缩略图的“3D”入口可在卡片内预览，横向拖动旋转；一次只打开一个预览，关闭、离开可视区域或切到后台后停止渲染。默认仍显示图片，不下载模型；预览固定加载移动端第 0 阶段，不预载其余阶段。此试验尚未经过真实手机性能验收。
-- 点击“虚拟试吃”后，首阶段按需加载，随后同一食物的其余阶段顺序预载。加载失败只影响下一阶段，当前模型和进度保留，点击重试即可。
-- 直接轻点食物进食，不提供重复的“吃一口”按钮；拖拽可以绕模型自身中心观察，松手后有惯性。
-- 四阶段按 5、6、5、6 次点击推进，界面只显示百分比进度。每口动画约 0.32 秒，阶段切换约 0.16 秒；吃完后可以再吃一次，或返回菜品选择规格加入点单；原先填写的数量、规格和备注会保留。
-- 每口播放真实咀嚼录音，停下点击时保留完整尾音，连续点击以 60 ms 交叉淡化衔接。模型有压缩回弹与碎屑反馈；前三次阶段切换有轻量提示音，全部吃完播放上扬拨弦通关旋律。静音、退出和重玩均取消正在播放及待播音效。
-- 设置可控制声音、触感、动态效果和拖动灵敏度，并保存在当前浏览器。新用户默认开启声音；已有静音选择不被覆盖。系统减少动态效果时默认跟随系统，关闭碎屑与回弹，也可在设置中覆盖。
-- 原始 GLB 保存在 `public/models/`，发布使用 `public/models-mobile/` 优化资产。当前汉堡四阶段从 75.36 MiB 优化到 9.91 MiB；详细命令和测量见 [模型优化记录](docs/model-optimization.md)。
+- 菜单按分类展示菜品，详情支持规格、数量和备注，再加入点单。价格以整数分计算；购物车和最近订单通过 localStorage 恢复。
+- 菜单静态封面、轮播和 3D 预览按当前页面需要加载；菜单预览使用 models-runtime 的第 0 阶段。普通饮品使用图片，售罄薯条不提供其他菜品的试吃。
+- 虚拟试吃按当前食物的阶段数组加载，首阶段就绪后顺序预取后续阶段。菜单预览与手机、桌面试吃均使用同一套 models-runtime 模型，不按视口选择资源。
+- 直接轻点食物进食，拖拽旋转，松手保留惯性；阶段口数、姿态和校准按食物独立配置。失败可重试，退出会取消该次试吃仍在进行的下载和后续预取。
+- 音效按食物及阶段配置，饮品使用吸饮声。静音、退出和重玩取消待播音效；设置保存声音、触感、动态效果和拖动灵敏度偏好。
+- 试吃和详情各自保留已验收的旋转、回正及减少动态行为；资产发布流程不会更改这些交互。
 
-## 添加一种新食物
+## 最终模型与发布资源
 
-给素材制作者的交付清单见 [新增食物素材规范](docs/adding-food.md)。准备 4 个带贴图的 GLB、名称和阶段顺序即可；推荐附封面和参考照片。
+Git 保留最终运行 GLB、正式图片/音频及来源许可、catalog/manifest、源码、测试、配置与锁文件。原始 source、processed 副本、legacy public/models、public/models-mobile、public/models-desktop、artifacts 和历史过程记录继续保存在本机，默认不跟踪，也不随生产包发布。干净克隆不需要这些本地 archive。
 
-四个 GLB 足够运行一个四阶段食物，但它们代表**同一种食物的四个剩余阶段**，不是四种不同食物。建议另备一张小尺寸 WebP 封面；当前内置汉堡使用轻量 SVG 插画封面，缺少摄影封面也不影响 3D 游玩。
+唯一正式运行模型目录为 public/models-runtime。当前共 32 个 GLB：catalog 中 6 种食物各 4 阶段，加 chocolate 与 canned 各 4 个兼容模型。assets/manifest.json 的 runtimeRoots 必须恰好为 {"unified":"public/models-runtime"}。assets/catalog.json 提供食物阶段、前缀和校准；assets/manifest.json 的 runtimeFiles 登记全部最终及兼容模型的路径、SHA-256、字节数和网格局部尺寸。不要因为某个资源目前没有菜单入口就删除兼容模型。
 
-1. 将不可修改的原始文件放入 `public/models/`，命名为 `<food-id>-0.glb` 到 `<food-id>-3.glb`。
-2. 运行 `node scripts/optimize-models.mjs --food <food-id>`。脚本会先检查四个源文件，再写入对应的 `public/models-mobile/<food-id>-0.glb` 到 `-3.glb`，绝不改写源文件。`--sample` 只处理第 0 阶段，`--dry-run` 可先查看路径和参数。
-3. 在 `src/data/foods.ts` 注册一个 `FoodDefinition`：填写稳定 `id`、名称、描述、封面路径，并提供四个阶段的移动版 URL、口数和校准信息。不要把第二种食物追加到汉堡的 stages；每种食物必须有自己的四阶段数组。
-4. 如果提供封面，将文件放入 `public/foods/<food-id>.webp`，并在清单的 `cover` 使用相同 URL。选择页会自动显示该目录项，进入时只创建当前食物自己的 `AssetStore`，不会下载未选择的食物。
+替换或新增最终模型后，从项目根目录执行：
 
-单个食物增加的传输预算约等于其四个移动版 GLB；当前策略不预载所有食物，能避免选择页打开就下载整套模型。解析后的阶段在当前游玩会话中去重并按 0→1→2→3 顺序缓存，切换食物会建立新的缓存边界。
+```sh
+python tools/assets.py inventory --runtime-only
+python tools/assets.py verify --runtime-only
+```
 
-## 设计与验证
+它们分别对应 `pnpm assets:inventory` 和 `pnpm assets:verify`。运行版 inventory 只读取统一目录的最终 GLB，更新 runtimeFiles、移除旧 runtimeRoots 键并保留 manifest 的原来源字段；verify 校验最终目录、覆盖、哈希、字节数、尺寸和内嵌资源，不读取 source/processed。
 
-- `src/data/foods.ts` 是食物与阶段的运行时契约；`src/core/sequence.ts` 从当前食物的 stages 推导阶段数和口数。
-- `src/scene/presentation.ts` 保持统一地面线，第二、三阶段比旧版更饱满，第四阶段明显缩小；旋转组以当前模型包围盒中心为轴，避免绕世界原点公转。
-- 原始生成模型可能有镜面感、底部缺陷与阶段形状差异；移动版已降面、量化并将 2048 贴图缩至 1024 WebP，细节会有所损失，原始资产保留不变。
-- 浏览器真机兼容和性能仍应在对应设备上验收。Vite 仍可能提示 Three.js 运行时代码超过 500 kB，这是依赖体积提示，不影响功能。
+生产 build 关闭整个 public 目录的自动复制：只按 runtimeFiles 复制 public/models-runtime 模型，并带上 public/foods、public/audio。legacy 模型、调试 HTML 和其他候选目录即使保留本机，也不会进入生产包。开发服务器仍保留原有 public 路径行为。
+
+## 添加食物与本地高级加工
+
+素材要求和接入步骤见 [新增食物素材规范](docs/adding-food.md)，资产目录与高级加工说明见 [资产维护说明](assets/README.md)。每种食物需要自己的阶段数组，阶段数量与口数由 catalog 配置；名称、封面、声音和菜单关联仍在源码中登记。
+
+旧 `scripts/optimize-models.mjs`、build-desktop-models.py 以及不带 --runtime-only 的 Python inventory/verify/sync 属于可选本地加工流程，依赖本机原始或 processed 目录。这些旧流程只维护本机旧双端目录，不会向 models-runtime 发布；archive inventory 保留现有 runtimeFiles。历史 simplify=0.35、降分辨率及 WebP 配方包含有损步骤，不能代替本轮在视觉复核下采用的精度压缩；不要直接重跑覆盖已经验收的最终模型。候选、参数、前后对比和验证记录放 .codex，验收后再更新最终 GLB 和 runtimeFiles。
+
+本轮统一模型保留三角面数量，采用顶点去重及精度压缩。贴图多数限制为 1024，汉堡等少数基础色保留 1536；位置/UV 以 16 位为目标，超出适用范围的 UV 保留原精度，法线按视觉复核选 8 或 12 位。原有 foodMaterialsBaked 材质处理保持，不重复调色。
+
+浏览器真机兼容与性能需在目标设备验收。Three.js 依赖可能触发 Vite 的大 chunk 提示；音频来源和使用许可见 public/audio 中保留的说明。

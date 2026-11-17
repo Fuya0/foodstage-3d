@@ -46,14 +46,14 @@ describe('shared preview requests', () => {
     await Promise.resolve();
     expect(loaded).toEqual(['queue-a']);
   });
-  it('deduplicates concurrent and completed requests without fetching desktop assets', async () => {
+  it('deduplicates concurrent and completed requests for the canonical runtime asset', async () => {
     const request = vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockResolvedValue(model());
     const first = loadPreview('classic-burger');
     expect(loadPreview('classic-burger')).toBe(first);
     const asset = await first;
     expect(loadPreview('classic-burger')).toBe(first);
     expect(request).toHaveBeenCalledTimes(1);
-    expect(request.mock.calls[0]![0]).toMatch(/^\/models-mobile\//);
+    expect(request.mock.calls[0]![0]).toBe('/models-runtime/burger-0.glb');
     expect(asset.scale).toBe(1);
     expect(asset.radius).toBeGreaterThan(0);
   });

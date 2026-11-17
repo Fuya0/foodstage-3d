@@ -4,7 +4,7 @@ function assetStages(id: string): FoodStage[] {
   const food = assetCatalog.foods.find(item => item.id === id);
   if (!food) throw new Error(`Missing asset catalog entry: ${id}`);
   return food.stages.map((stage, index) => ({
-    url: `/models-mobile/${food.runtimePrefix}-${index}.glb`,
+    url: `/models-runtime/${food.runtimePrefix}-${index}.glb`,
     bites: stage.bites,
     calibration: {
       scale: stage.calibration.scale,

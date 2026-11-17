@@ -102,20 +102,29 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
   }, [state.run, state.stage, state.phase, settings]);
 
   const bite = useCallback(() => {
-    if (chewTimer.current || state.phase !== 'idle' || contextLost || !hitReady || !hit.current) return;
+    if (state.phase !== 'idle' || contextLost || !hitReady || !hit.current) return;
+    if (chewTimer.current) clearTimeout(chewTimer.current);
     const finishing = state.bites === food.stages[state.stage]!.bites - 1;
     const role = finishing ? 'finish' : state.bites === 0 ? 'bite' : 'chew';
     impulse(motion, finishing ? 1 : 0.65);
     biteFeedback(settings, food.sound, role, food.interaction, state.stage);
     setChewing(true);
-    if (!finishing) dispatch({ type: 'BITE' });
+    // Every mouthful counts on input; recoil and audio may finish independently.
+    dispatch({ type: 'BITE' });
     chewTimer.current = setTimeout(() => {
       chewTimer.current = null;
       setChewing(false);
-      if (finishing) dispatch({ type: 'BITE' });
     }, CHEW_SECONDS * 1000);
   }, [contextLost, food.stages, food.sound, food.interaction, hitReady, motion, settings, state.bites, state.phase, state.stage]);
-  const playable = state.phase === 'idle' && !chewing && !contextLost && hitReady;
+  const restart = () => {
+    if (chewTimer.current) clearTimeout(chewTimer.current);
+    chewTimer.current = null;
+    setChewing(false);
+    Object.assign(motion, createMotion());
+    setZoom(1);
+    dispatch({ type: 'RESTART' });
+  };
+  const playable = state.phase === 'idle' && !contextLost && hitReady;
   const input = useFoodInput(motion, hit, playable, bite, settings.sensitivity, zoomBy);
   const current = entries[state.stage];
   const base = entries[0];
@@ -133,11 +142,11 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
       </div></SceneBoundary>}
     </section>
     <footer className="action-dock">
-      <div className="food-detail"><div><p className="food-caption">{state.phase === 'finished' ? '片刻满足' : `阶段 ${state.stage + 1} / ${food.stages.length}`}</p><h2>{state.phase === 'finished' ? '刚刚好' : item.name}</h2></div>{state.phase !== 'finished' && <p className="interaction-hint" id="food-hint"><span>{chewing ? '慢慢嚼，享受这一口' : '轻点品尝'}</span><span>拖动，换个角度</span></p>}</div>
+      <div className="food-detail"><div><p className="food-caption">{state.phase === 'finished' ? '片刻满足' : `阶段 ${state.stage + 1} / ${food.stages.length}`}</p><h2>{state.phase === 'finished' ? '刚刚好' : item.name}</h2></div>{state.phase !== 'finished' && <p className="interaction-hint" id="food-hint"><span>{chewing ? '轻点，继续品尝' : '轻点品尝'}</span><span>拖动，换个角度</span></p>}</div>
       {(error || contextLost) && <p className="error-message" role="status" aria-live="polite">{status}</p>}
       {error ? <button className="primary-button" type="button" onClick={() => { void store.retry(needed); }}>重试加载</button>
         : contextLost ? <button className="primary-button" type="button" onClick={() => setContextLost(false)}>重试画面</button>
-        : state.phase === 'finished' ? <div className="tasting-finished-actions"><button className="primary-button" type="button" onClick={onBack}>{item.available ? '选规格，加入点单' : '返回菜品'}</button><button className="back-button" type="button" onClick={() => { Object.assign(motion, createMotion()); setZoom(1); dispatch({ type: 'RESTART' }); }}>再吃一次</button></div>
+        : state.phase === 'finished' ? <div className="tasting-finished-actions"><button className="primary-button" type="button" onClick={onBack}>{item.available ? '选规格，加入点单' : '返回菜品'}</button><button className="back-button" type="button" onClick={restart}>再吃一次</button></div>
         : (state.phase === 'loading' || state.phase === 'waiting') && <p className="loading-status" role="status">{status}</p>}
     </footer>
   </main>;

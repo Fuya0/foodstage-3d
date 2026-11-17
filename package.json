@@ -1,7 +1,10 @@
 {
   "name": "foodstage-3d",
   "description": "食刻（FoodStage 3D）——带 3D 虚拟试吃的餐厅扫码点单演示",
-  "repository": { "type": "git", "url": "https://github.com/Fuya0/foodstage-3d.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fuya0/foodstage-3d.git"
+  },
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,8 +18,8 @@
     "preview": "vite preview",
     "optimize:models": "node scripts/optimize-models.mjs",
     "optimize:sample": "node scripts/optimize-models.mjs --sample",
-    "assets:inventory": "python tools/assets.py inventory",
-    "assets:verify": "python tools/assets.py verify",
+    "assets:inventory": "python tools/assets.py inventory --runtime-only",
+    "assets:verify": "python tools/assets.py verify --runtime-only",
     "assets:sync": "python tools/assets.py sync"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/three": "^0.180.0",

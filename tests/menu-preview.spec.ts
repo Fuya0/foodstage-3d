@@ -30,7 +30,7 @@ test('welcome shows the interactive burger on its own and respects reduced motio
   await expect(page.getByRole('dialog', { name: '几位用餐？' })).toBeVisible();
 });
 
-test('image cards and drink details preserve ordering while food details reuse mobile models', async ({ page }) => {
+test('image cards and drink details preserve ordering while food details reuse canonical models', async ({ page }) => {
   const models: string[] = [];
   page.on('request', request => { if (/\.glb(?:\?|$)/.test(request.url())) models.push(request.url()); });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -61,7 +61,7 @@ test('image cards and drink details preserve ordering while food details reuse m
   await rotatePreview(page, detailPreview);
   await expect(page.locator('canvas')).toHaveCount(1);
   await expect(page.getByRole('heading', { name: '经典汉堡' })).toBeVisible();
-  expect(models.map(url => new URL(url).pathname)).toContain('/models-mobile/burger-0.glb');
+  expect(models.map(url => new URL(url).pathname)).toContain('/models-runtime/burger-0.glb');
   expect(models.filter(url => url.includes('/burger-'))).toHaveLength(1);
   await page.getByRole('button', { name: '返回菜单', exact: true }).click();
   await page.getByRole('button', { name: '饮品', exact: true }).click();
@@ -216,7 +216,7 @@ test('burger detail preview resumes after scrolling out of view', async ({ page 
 
 test('failed detail model leaves image cards and ordering usable and retries on reopening', async ({ page }) => {
   let fail = true;
-  await page.route('**/models-mobile/burger-0.glb', route => fail ? route.abort() : route.continue());
+  await page.route('**/models-runtime/burger-0.glb', route => fail ? route.abort() : route.continue());
   await page.goto('/?table=A01&mode=dine-in&guests=2');
   await expect(page.locator('.ordering-food-card').first().locator('img')).toBeVisible();
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
@@ -229,3 +229,26 @@ test('failed detail model leaves image cards and ordering usable and retries on 
   await preview.scrollIntoViewIfNeeded();
   await expect(preview).toHaveAttribute('data-ready', 'true');
 });
+
+for (const width of [390, 1440]) {
+  test(`carousel, detail and tasting request the same model at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const modelRequests: string[] = [];
+    page.on('request', request => {
+      const path = new URL(request.url()).pathname;
+      if (path.endsWith('.glb')) modelRequests.push(path);
+    });
+    await page.goto('/?table=A01');
+    await expect(page.locator('.food-carousel-models')).toHaveAttribute('data-loaded-models', /classic-burger/);
+    await page.getByRole('button', { name: '查看经典汉堡', exact: true }).click();
+    await expect(page.locator('.ordering-detail-art').getByTestId('menu-model-preview')).toHaveAttribute('data-ready', 'true');
+    expect(modelRequests.filter(path => path.endsWith('/burger-0.glb'))).toEqual(['/models-runtime/burger-0.glb']);
+    modelRequests.length = 0;
+    await page.getByRole('button', { name: '虚拟试吃', exact: true }).click();
+    await expect(page.getByRole('button', { name: '经典汉堡', exact: true })).toHaveAttribute('data-hit-ready', 'true');
+    await expect(page.locator('canvas[data-engine]')).toHaveAttribute('data-stage-blend', '1');
+    expect(modelRequests.filter(path => path.endsWith('/burger-0.glb'))).toEqual(['/models-runtime/burger-0.glb']);
+    expect(modelRequests.every(path => path.startsWith('/models-runtime/'))).toBe(true);
+  });
+}

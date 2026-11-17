@@ -24,12 +24,15 @@ test('real model, drag isolation, percentage transition and complete replay', as
   const failures: string[] = [];
   page.on('pageerror', error => failures.push(error.message));
   page.on('console', message => { if (message.type() === 'error') failures.push(message.text()); });
-  const loaded = page.waitForResponse(response => response.url().includes('/models-desktop/burger-0.glb') && response.ok());
+  const loaded = page.waitForResponse(response => response.url().includes('/models-runtime/burger-0.glb') && response.ok());
   await page.goto('/?mode=dine-in&guests=2');
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
   await page.getByRole('button', { name: '虚拟试吃' }).click();
-  const desktopModel = await loaded; await idle(page, 0);
-  expect(Number(desktopModel.headers()['content-length'])).toBeGreaterThan(3_000_000);
+  const runtimeModel = await loaded; await idle(page, 0);
+  const modelBytes = await runtimeModel.body();
+  expect(modelBytes.subarray(0, 4).toString()).toBe('glTF');
+  expect(modelBytes.readUInt32LE(4)).toBe(2);
+  expect(modelBytes.readUInt32LE(8)).toBe(modelBytes.length);
   await expect(page.locator('canvas[data-engine]')).toBeVisible();
   await expect(page.locator('h1')).toHaveText('食刻');
   await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
@@ -50,7 +53,7 @@ test('real model, drag isolation, percentage transition and complete replay', as
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '1');
   await expect(area).toHaveAttribute('aria-disabled', 'false');
   await page.screenshot({ path: '.codex/screenshots/desktop.png' });
-  await bites(page, 4);
+  await bites(page, 2);
   await idle(page, 1);
   await expect.poll(() => page.locator('canvas[data-engine]').evaluate(canvas => Number(getComputedStyle(canvas).opacity))).toBe(1);
   await page.screenshot({ path: '.codex/screenshots/desktop-stage-1.png' });
@@ -58,7 +61,7 @@ test('real model, drag isolation, percentage transition and complete replay', as
   await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '0');
   for (let stage = 1; stage < 4; stage++) {
     if (stage > 1) await page.locator('canvas[data-engine]').screenshot({ path: `.codex/screenshots/stage-${stage + 1}.png`, omitBackground: true });
-    await bites(page, stage % 2 === 0 ? 5 : 6, stage < 3);
+    await bites(page, 3, stage < 3);
     if (stage < 3) await idle(page, stage + 1);
   }
   await expect(page.getByRole('button', { name: '再吃一次' })).toBeVisible();
@@ -73,13 +76,13 @@ test('real model, drag isolation, percentage transition and complete replay', as
 
 test('failed next asset retains full progress and model until retry succeeds', async ({ page }) => {
   let fail = true;
-  await page.route('**/models-desktop/burger-1.glb', route => fail ? route.fulfill({ status: 503, body: 'temporary failure' }) : route.continue());
+  await page.route('**/models-runtime/burger-1.glb', route => fail ? route.fulfill({ status: 503, body: 'temporary failure' }) : route.continue());
   await page.goto('/?mode=dine-in&guests=2');
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
   await page.getByRole('button', { name: '虚拟试吃' }).click();
-  await idle(page, 0); await bites(page, 5, false);
+  await idle(page, 0); await bites(page, 3, false);
   await expect(page.getByTestId('experience')).toHaveAttribute('data-phase', 'waiting');
-  await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '5');
+  await expect(page.getByTestId('experience')).toHaveAttribute('data-bites', '3');
   await expect(page.locator('canvas[data-engine]')).toBeVisible();
   await expect(page.getByRole('button', { name: '重试加载' })).toBeVisible();
   fail = false; await page.getByRole('button', { name: '重试加载' }).click(); await idle(page, 1);
@@ -110,7 +113,7 @@ test('direct food interaction and help restore focus without a separate eat butt
 });
 
 test('menu table and settings persist, and tasting returns to the dish draft', async ({ page }) => {
-  const requestedModel = (id: string) => `/models-mobile/${id}-0.glb`;
+  const requestedModel = (id: string) => `/models-runtime/${id}-0.glb`;
   const visibleOnlyUrls = new Set(menuItems.flatMap(item => item.previewModelUrl ? [item.previewModelUrl] : []));
   const modelRequests: string[] = [];
   page.on('request', request => {
@@ -197,7 +200,7 @@ test('menu table and settings persist, and tasting returns to the dish draft', a
   await page.setViewportSize({ width: 1440, height: 1000 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '.codex/screenshots/detail-desktop.png' });
-  const loaded = page.waitForResponse(response => response.url().includes('/models-desktop/burger-0.glb') && response.ok());
+  const loaded = page.waitForResponse(response => response.url().includes('/models-runtime/burger-0.glb') && response.ok());
   await page.getByRole('button', { name: '虚拟试吃' }).click();
   await loaded; await idle(page, 0);
   await page.getByRole('button', { name: '返回菜品' }).click();
@@ -225,13 +228,13 @@ test('mobile layout fits and reduced-motion completes transitions', async ({ pag
   await page.getByRole('button', { name: '查看经典汉堡' }).click();
   await page.getByRole('button', { name: '虚拟试吃' }).click();
   await idle(page, 0);
-  expect(await page.evaluate(() => performance.getEntriesByType('resource').some(entry => entry.name.includes('/models-mobile/burger-0.glb')))).toBe(true);
-  expect(await page.evaluate(() => performance.getEntriesByType('resource').some(entry => entry.name.includes('/models-desktop/burger-0.glb')))).toBe(false);
+  expect(await page.evaluate(() => performance.getEntriesByType('resource').some(entry => entry.name.includes('/models-runtime/burger-0.glb')))).toBe(true);
+  expect(await page.evaluate(() => performance.getEntriesByType('resource').filter(entry => /\.glb(?:\?|$)/.test(entry.name)).every(entry => new URL(entry.name).pathname.startsWith('/models-runtime/')))).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '.codex/screenshots/mobile.png' });
   for (let stage = 0; stage < 4; stage++) {
     await idle(page, stage);
     await page.locator('canvas[data-engine]').screenshot({ path: `.codex/screenshots/mobile-stage-${stage + 1}.png`, omitBackground: true });
-    if (stage < 3) await bites(page, stage % 2 === 0 ? 5 : 6);
+    if (stage < 3) await bites(page, 3);
   }
 });
