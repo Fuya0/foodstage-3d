@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse, hashlib, json, subprocess
 import numpy as np
 from scipy.signal import butter, sosfilt, find_peaks, stft, istft
-from scipy.ndimage import uniform_filter, uniform_filter1d
+from scipy.ndimage import uniform_filter, uniform_filter1d, median_filter
 
 ROOT = Path(__file__).resolve().parents[2]
 LIB = ROOT / '音效库'
@@ -50,6 +50,43 @@ def clean_mouth(samples):
         return float(20*np.log10(max(np.sqrt(np.mean(cleaned[mask]**2)), 1e-10)/max(np.sqrt(np.mean(samples[mask]**2)), 1e-10))) if mask.any() else None
     return cleaned, dict(method='STFT Wiener subtraction + smoothed downward expansion + mild 700-2400 Hz presence',
         quiet_region_change_db=relative(quiet_samples), active_region_change_db=relative(activity))
+
+def creamy_texture(samples):
+    """Reduce tiny granular attacks while retaining continuous low-mid mouth texture."""
+    frequency, _, z = stft(samples, fs=SR, nperseg=1024, noverlap=768)
+    magnitude = abs(z)
+    baseline = median_filter(magnitude, size=(1, 9))
+    reduction = np.minimum(1, (1.3*baseline+1e-8)/np.maximum(magnitude, 1e-8))
+    reduction[frequency < 650] = 1
+    reduction = uniform_filter(np.maximum(reduction, .22), size=(3, 3))
+    _, result = istft(z*reduction, fs=SR, nperseg=1024, noverlap=768)
+    result = sosfilt(butter(2, 140, 'highpass', fs=SR, output='sos'), result[:len(samples)])
+    result = sosfilt(butter(4, 1700, 'lowpass', fs=SR, output='sos'), result)
+    # Keep palate contact audible; softness should not become a low rumble.
+    body = sosfilt(butter(2, [500, 1400], 'bandpass', fs=SR, output='sos'), result)
+    return result + .30*body
+
+def tender_meat(samples):
+    # Soft cooked flesh: retain jaw/body, reduce sibilant lip noise and brittle ticks.
+    return sosfilt(butter(4, 2400, 'lowpass', fs=SR, output='sos'), samples)
+
+def soft_events(samples):
+    """Prefer sustained, low-roughness mouthfuls rather than the strongest clicks."""
+    candidates = []
+    for start in np.arange(.10, len(samples)/SR-.95, .12):
+        part = samples[round(start*SR):round((start+.72)*SR)]
+        rms = np.sqrt(np.mean(part**2))
+        if rms < max(np.sqrt(np.mean(samples**2))*.5, 1e-6): continue
+        spectrum = abs(np.fft.rfft(part))**2
+        frequency = np.fft.rfftfreq(len(part), 1/SR)
+        high = spectrum[frequency>1800].sum()/max(spectrum.sum(), 1e-12)
+        crest = max(abs(part))/rms
+        candidates.append((high+.025*crest, float(start)))
+    selected = []
+    for _, start in sorted(candidates):
+        if all(abs(start-other) >= .80 for other in selected): selected.append(start)
+        if len(selected) == 6: break
+    return sorted(selected) if len(selected) >= 3 else events(samples)
 
 def events(samples):
     # Rank local jaw closures, not the loudest arbitrary overlapping windows.
@@ -111,10 +148,10 @@ def main():
     # Remaining amount changes portion weight slightly, never magically removes all crust.
     recipes = [
         ('foodstage-3d', 'classic-burger', local('吃汉堡'), 6200, None, '面包、肉饼与生菜；剩余量仅轻微改变口量'),
-        ('foodstage-3d', 'crispy-chicken', remote('chicken-crust'), 7000, remote('chicken-soft'), '脆壳保留，软鸡肉从 12% 增至 30%'),
+        ('foodstage-3d', 'crispy-chicken', remote('chicken-crust'), 6200, remote('chicken-soft'), '软鸡肉为主；入口仅短暂破壳，中段与收尾以湿润肉纤维咀嚼为主'),
         ('foodstage-3d', 'rosemary-fries', local('炸薯条'), 7800, None, '每一根仍有脆壳；不将剩余薯条变成土豆泥'),
         ('foodstage-3d', 'pepperoni-pizza', local('披萨'), 3300, None, '采用披萨实录，软面团与芝士的韧感'),
-        ('foodstage-3d', 'mango-cheesecake', local('奶油蛋糕'), 2400, None, '轻柔湿润，保持奶油质感'),
+        ('foodstage-3d', 'mango-cheesecake', local('奶油蛋糕'), 2200, None, '筛选连贯奶油咀嚼，抑制碎粒瞬态，保留柔软口腔压合与黏连尾音'),
         ('xlsk', 'satay', remote('chicken-soft'), 4500, None, '软鸡肉实录，先降底噪与间隙噪声，再突出咬合，不继续整体加音量'),
         ('xlsk', 'pad-thai', remote('noodles'), 4600, None, '面条实录的独立咬合，保留短吸入与柔软咀嚼'),
         ('xlsk', 'tom-yum', remote('soup'), 4800, remote('chicken-soft'), '先吃固体再喝汤，中间交错；虾仁层采用去噪软肉口腔声拟音，非虾仁专门实录'),
@@ -125,20 +162,29 @@ def main():
     changed = set()
     for project, dish, raw, cutoff, extra, note in recipes:
         if args.dish and dish not in args.dish: continue
+        if any(any(f'/v{revision}/' in take.get('bite', '') for revision in [5,6,7,8,9]) for take in manifests[project].get(dish, [])):
+            print(dish, 'uses a newer natural/soft recipe; use build_natural_eating_audio.py or build_soft_eating_audio.py', flush=True)
+            continue
         changed.add(project)
         samples = source(raw, cutoff); starts = events(samples)
         cleanup = None
         if dish == 'satay':
             samples, cleanup = clean_mouth(samples)
             starts = events(samples)
+        if dish in ['mango-cheesecake', 'mango-rice']:
+            starts = soft_events(samples)
+            samples = creamy_texture(samples)
+            cleanup = dict(method='sustained soft-window selection + median spectral transient attenuation above 650 Hz + 140 Hz highpass / 4-pole 1700 Hz lowpass + mild 500-1400 Hz body')
         if dish == 'rosemary-fries':
             starts = [2.82, 3.54, 4.36, 5.84] # Existing source's documented clean chew windows.
         extras = source(extra, 3200) if extra else None
-        if dish == 'tom-yum':
+        if dish in ['tom-yum', 'crispy-chicken']:
             extras, cleanup = clean_mouth(extras)
+        if dish == 'crispy-chicken':
+            extras = tender_meat(extras)
         extra_starts = events(extras) if extras is not None else []
         base = ROOT/project/'public'/'audio'
-        revision = 'v3' if dish in ['satay', 'tom-yum'] else 'v2'
+        revision = 'v4' if dish in ['crispy-chicken', 'mango-cheesecake', 'mango-rice', 'pad-thai'] else 'v3' if dish in ['satay', 'tom-yum'] else 'v2'
         folder = base/('tasting' if project == 'xlsk' else '')/dish/revision
         rows, stages = [], []
         for stage in range(4):
@@ -152,6 +198,12 @@ def main():
                 if extras is not None:
                     extra_start = extra_starts[(role_idx+stage) % len(extra_starts)]
                     mix = .12+stage*.06 if dish == 'crispy-chicken' else [.38, .35, .32, .30][stage]
+                    if dish == 'crispy-chicken':
+                        mix = min(.97, {'bite': .68, 'chew-1': .88, 'chew-2': .92, 'finish': .94}[role]+stage*.01)
+                        # Crust is a brief break at entry, not a continuous crackle bed.
+                        time = np.arange(len(part))/SR
+                        envelope = .08+.92*np.exp(-np.maximum(time-.07, 0)/.07)
+                        part *= envelope if role == 'bite' else .28
                     if dish == 'tom-yum':
                         # Meat first, occasional broth between mouthfuls, mostly soup at the end.
                         mix = [
@@ -161,16 +213,24 @@ def main():
                             {'bite': .30, 'chew-1': .16, 'chew-2': .20, 'finish': .06},
                         ][stage][role]
                     part = (1-mix)*part + mix*excerpt(extras, extra_start, duration)
+                if dish == 'pad-thai' and role == 'finish':
+                    part = sosfilt(butter(4, 2600, 'lowpass', fs=SR, output='sos'), part)
+                if dish == 'mango-rice':
+                    part = sosfilt(butter(3, 2100, 'lowpass', fs=SR, output='sos'), part)
                 dest = folder/f'stage-{stage}'/f'{role}.mp3'
                 metric = encode(part, dest, -21.0-stage*.25)
                 url = '/' + dest.relative_to(ROOT/project/'public').as_posix()
                 files[role] = url
                 rows.append(dict(url=url, source=raw.relative_to(ROOT).as_posix(), start=round(start, 3),
                     extra_source=extra.relative_to(ROOT).as_posix() if extra else None,
-                    extra_start=extra_start, mix=mix, lowpass=cutoff, **metric))
+                    extra_start=extra_start, mix=mix, lowpass=cutoff,
+                    texture_processing=('short crust envelope + tender meat 2400Hz' if dish == 'crispy-chicken' else
+                        'finish 2600Hz' if dish == 'pad-thai' and role == 'finish' else
+                        'creamy transient reduction; final 2100Hz' if dish == 'mango-rice' else None), **metric))
             stages.append(files)
         manifests[project][dish] = stages
-        record = dict(dish=dish, note=note, cleanup=cleanup, selection='energy onset detection; up to eight closures separated by >=0.8s; takes reused across stages', clips=rows)
+        selection = 'sustained low-roughness windows separated by >=0.8s' if dish in ['mango-cheesecake', 'mango-rice'] else 'energy onset detection; up to eight closures separated by >=0.8s; takes reused across stages'
+        record = dict(dish=dish, note=note, cleanup=cleanup, selection=selection, clips=rows)
         (folder/'manifest.json').write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
         credits = []
         for path in [raw, extra]:

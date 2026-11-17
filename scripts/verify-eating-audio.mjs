@@ -2,13 +2,29 @@
 import { chromium } from '@playwright/test';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { spawn } from 'node:child_process';
+const production = process.argv.includes('--production');
+const servers = [];
+if (process.argv.includes('--serve')) {
+  if (!production) throw Error('--serve requires --production');
+  for (const [folder, port] of [['foodstage-3d', 4183], ['xlsk', 4184]]) {
+    const cwd = resolve('..', folder);
+    servers.push(spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd, stdio: 'ignore', windowsHide: true }));
+  }
+}
 const chrome = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const browser = await chromium.launch({ executablePath: existsSync(chrome) ? chrome : existsSync(edge) ? edge : undefined,
   args: ['--autoplay-policy=no-user-gesture-required'] });
 try {
-  const production = process.argv.includes('--production');
   for (const [folder, port] of [['foodstage-3d', production ? 4183 : 4181], ['xlsk', production ? 4184 : 4182]]) {
+    if (servers.length) {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        try { if ((await fetch(`http://127.0.0.1:${port}`)).ok) break; } catch { /* Starting preview. */ }
+        if (attempt === 39) throw Error(`Preview not ready: ${port}`);
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
     const manifest = JSON.parse(readFileSync(resolve('..', folder, 'src/data/eating-audio.json'), 'utf8'));
     const urls = Object.values(manifest).flatMap(stages => stages.flatMap(stage => Object.values(stage)));
     const page = await browser.newPage();
@@ -57,4 +73,4 @@ try {
     console.log(folder, JSON.stringify(result));
     await page.close();
   }
-} finally { await browser.close(); }
+} finally { await browser.close(); for (const server of servers) server.kill(); }

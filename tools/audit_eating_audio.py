@@ -19,14 +19,25 @@ def main():
                     rms = float(np.sqrt(np.mean(samples**2)))
                     assert .5 < duration < 1, (url, duration)
                     assert peak <= .75, (url, peak)
-                    assert -27 < 20*np.log10(rms) < -19, (url, rms)
+                    if any(f'/v{revision}/' in url for revision in [5,6,7,8,9]):
+                        # Natural dynamics: inspect against the recorded source,
+                        # rather than requiring the former noise-boosting RMS target.
+                        meta = json.loads((path.parent.parent/'manifest.json').read_text(encoding='utf-8'))
+                        record = next(clip for clip in meta['clips'] if clip['url']==url)
+                        assert record['source_gain_db'] <= (12.001 if '/v9/' in url else 6.001), url
+                        assert record['peak_attenuation'] <= 1, url
+                        assert abs(20*np.log10(rms)-record['rms_db']) < .02, url
+                        assert rms > 1e-5 and np.isfinite(samples).all(), url
+                    else:
+                        assert -27 < 20*np.log10(rms) < -19, (url, rms)
                     all_rows.append(dict(project=project, dish=dish, stage=stage, role=role,
                         duration=duration, peak_db=20*np.log10(peak), rms_db=20*np.log10(rms)))
                 # Each group is opening bite -> chew -> closing mouthful; 0.9 s gap between stages.
                 for role in ['bite', 'chew-1' if stage%2 == 0 else 'chew-2', 'finish']:
                     reel.extend([decode(ROOT/project/'public'/files[role].lstrip('/')), np.zeros(round(SR*.20))])
                 reel.append(np.zeros(round(SR*.9)))
-            suffix = '-v3' if '/v3/' in stages[0]['bite'] else ''
+            revision = stages[0]['bite'].split('/')[-3]
+            suffix = '-'+revision if revision != 'v2' else ''
             subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-',
                 '-codec:a','libmp3lame','-b:a','128k',str(auditions/f'{dish}-four-stages{suffix}.mp3')],
                 input=np.concatenate(reel).astype('<f4').tobytes(), check=True)

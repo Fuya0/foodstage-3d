@@ -194,7 +194,8 @@ function playBuffer(context: AudioContext, buffer: AudioBuffer, level: number, t
     source.buffer = buffer;
     // Stage colouring: early stages of a food are usually its crisp outside, later ones
     // its softer inside, so the same recording can sound like a different mouthful.
-    source.playbackRate.value = (0.992 + Math.random() * 0.016) * (tint?.rate ?? 1);
+    const variation = tint?.rateVariation ?? 0.008;
+    source.playbackRate.value = (1 + (Math.random() * 2 - 1) * variation) * (tint?.rate ?? 1);
     highpass.type = 'highpass';
     highpass.frequency.value = 70;
     let tail: AudioNode = highpass;

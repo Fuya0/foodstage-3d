@@ -1,0 +1,488 @@
+{
+  "dish": "mango-cheesecake",
+  "revision": "v6",
+  "note": "真实香蕉软食咀嚼作柔软口腔代理，非蛋糕或糯米饭专门实录；避免原片中的脆裂/硬颗粒收尾。",
+  "selection": "sustained soft-food windows; whole interval and final 160ms screened separately; 0.78s tested/exported identically",
+  "clips": [
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-0/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -31.7864727973938,
+        "high": 0.02666223406804929,
+        "tail_high": 0.01547985636531074,
+        "crest_db": 21.42103672027588,
+        "tail_peak_ratio": 0.13656456768512726,
+        "tail_rms_ratio": 0.1194934993982315
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -31.79,
+      "peak_db": -10.37,
+      "sha256": "512bcdde86ae406205947bea88771a2c861a62a1747fd2544b7192bfcbae7d6f",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-0/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 42.16,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 42.15999999999998,
+        "rms_db": -39.52285971720871,
+        "high": 0.07053556020849075,
+        "tail_high": 0.0013518638938312556,
+        "crest_db": 22.061554165650413,
+        "tail_peak_ratio": 0.1655537156640258,
+        "tail_rms_ratio": 0.33496923022337316
+      },
+      "decoded_tail": {
+        "rms_db": -34.04190540313721,
+        "high": 0.07114094921826912,
+        "tail_high": 0.00237260700776707,
+        "crest_db": 22.132911682128906,
+        "tail_peak_ratio": 0.0962086021900177,
+        "tail_rms_ratio": 0.17599157989025116
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -34.04,
+      "peak_db": -11.91,
+      "sha256": "e5fa310d839e2a1a444df3056367273ef8d0ac750c04ef2fac96de820ccd68a7",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-0/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 32.7,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 32.69999999999999,
+        "rms_db": -35.656732434729975,
+        "high": 0.05345507167016179,
+        "tail_high": 0.022003582178792374,
+        "crest_db": 24.110169448061765,
+        "tail_peak_ratio": 0.2815474226266072,
+        "tail_rms_ratio": 0.4603059807640475
+      },
+      "decoded_tail": {
+        "rms_db": -30.06115198135376,
+        "high": 0.053839828241709346,
+        "tail_high": 0.022320782915774034,
+        "crest_db": 24.253406524658203,
+        "tail_peak_ratio": 0.27556300163269043,
+        "tail_rms_ratio": 0.4552972614765167
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -30.06,
+      "peak_db": -5.81,
+      "sha256": "d6075c36185b1ad7cf944787c1830e1335f05c1541f87fa8ef6763a9d003bc30",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-0/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -31.7864727973938,
+        "high": 0.02666223406804929,
+        "tail_high": 0.01547985636531074,
+        "crest_db": 21.42103672027588,
+        "tail_peak_ratio": 0.13656456768512726,
+        "tail_rms_ratio": 0.1194934993982315
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -31.79,
+      "peak_db": -10.37,
+      "sha256": "512bcdde86ae406205947bea88771a2c861a62a1747fd2544b7192bfcbae7d6f",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-1/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 42.16,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 42.15999999999998,
+        "rms_db": -39.52285971720871,
+        "high": 0.07053556020849075,
+        "tail_high": 0.0013518638938312556,
+        "crest_db": 22.061554165650413,
+        "tail_peak_ratio": 0.1655537156640258,
+        "tail_rms_ratio": 0.33496923022337316
+      },
+      "decoded_tail": {
+        "rms_db": -34.2529296875,
+        "high": 0.07332257367218852,
+        "tail_high": 0.0023632667823547263,
+        "crest_db": 22.145981788635254,
+        "tail_peak_ratio": 0.09629102051258087,
+        "tail_rms_ratio": 0.1762302815914154
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -34.25,
+      "peak_db": -12.11,
+      "sha256": "d6ee5e43b6cd8310fdf33dbe04b3c05761116566239928737b27112995ebd4b2",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-1/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 32.7,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 32.69999999999999,
+        "rms_db": -35.656732434729975,
+        "high": 0.05345507167016179,
+        "tail_high": 0.022003582178792374,
+        "crest_db": 24.110169448061765,
+        "tail_peak_ratio": 0.2815474226266072,
+        "tail_rms_ratio": 0.4603059807640475
+      },
+      "decoded_tail": {
+        "rms_db": -30.313146114349365,
+        "high": 0.05406708962817475,
+        "tail_high": 0.022368612040105814,
+        "crest_db": 24.239416122436523,
+        "tail_peak_ratio": 0.2777794599533081,
+        "tail_rms_ratio": 0.4578809440135956
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -30.31,
+      "peak_db": -6.07,
+      "sha256": "a10c6df0faa06ef04125eac874e671b117067568c0b2ddb2b5db85e303c65227",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-1/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -31.996376514434814,
+        "high": 0.025449776853994084,
+        "tail_high": 0.015069529360391723,
+        "crest_db": 21.453537940979004,
+        "tail_peak_ratio": 0.13640986382961273,
+        "tail_rms_ratio": 0.11994944512844086
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -32.0,
+      "peak_db": -10.54,
+      "sha256": "d3934915c89eb14790bb671731229836d5817d7515a2dccfe310f3ea163a3b30",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-1/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 42.16,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 42.15999999999998,
+        "rms_db": -39.52285971720871,
+        "high": 0.07053556020849075,
+        "tail_high": 0.0013518638938312556,
+        "crest_db": 22.061554165650413,
+        "tail_peak_ratio": 0.1655537156640258,
+        "tail_rms_ratio": 0.33496923022337316
+      },
+      "decoded_tail": {
+        "rms_db": -34.2529296875,
+        "high": 0.07332257367218852,
+        "tail_high": 0.0023632667823547263,
+        "crest_db": 22.145981788635254,
+        "tail_peak_ratio": 0.09629102051258087,
+        "tail_rms_ratio": 0.1762302815914154
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -34.25,
+      "peak_db": -12.11,
+      "sha256": "d6ee5e43b6cd8310fdf33dbe04b3c05761116566239928737b27112995ebd4b2",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-2/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 32.7,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 32.69999999999999,
+        "rms_db": -35.656732434729975,
+        "high": 0.05345507167016179,
+        "tail_high": 0.022003582178792374,
+        "crest_db": 24.110169448061765,
+        "tail_peak_ratio": 0.2815474226266072,
+        "tail_rms_ratio": 0.4603059807640475
+      },
+      "decoded_tail": {
+        "rms_db": -30.499508380889893,
+        "high": 0.053909503942614095,
+        "tail_high": 0.02212207138642878,
+        "crest_db": 24.22473907470703,
+        "tail_peak_ratio": 0.27778148651123047,
+        "tail_rms_ratio": 0.4571789503097534
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -30.5,
+      "peak_db": -6.27,
+      "sha256": "e1bf4fe38e005c5810b091b527ca129e98a9c45112125477ce4fe57d8e20a644",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-2/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -32.19876050949097,
+        "high": 0.025904782041409627,
+        "tail_high": 0.015304498358134182,
+        "crest_db": 21.440856456756592,
+        "tail_peak_ratio": 0.13661016523838043,
+        "tail_rms_ratio": 0.11989106237888336
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -32.2,
+      "peak_db": -10.76,
+      "sha256": "6be19c5bd84cce82716c94bc05bab0312c24815d64a189404bb5830a6577f56b",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-2/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 42.16,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 42.15999999999998,
+        "rms_db": -39.52285971720871,
+        "high": 0.07053556020849075,
+        "tail_high": 0.0013518638938312556,
+        "crest_db": 22.061554165650413,
+        "tail_peak_ratio": 0.1655537156640258,
+        "tail_rms_ratio": 0.33496923022337316
+      },
+      "decoded_tail": {
+        "rms_db": -34.43573474884033,
+        "high": 0.07294070162098021,
+        "tail_high": 0.002385826521922431,
+        "crest_db": 22.132980823516846,
+        "tail_peak_ratio": 0.09619173407554626,
+        "tail_rms_ratio": 0.17579230666160583
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -34.44,
+      "peak_db": -12.3,
+      "sha256": "298dd63e3145f1ccb08e7ab68de95ca230a42a83dafe44a2bd164f3201442898",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-2/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 32.7,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 32.69999999999999,
+        "rms_db": -35.656732434729975,
+        "high": 0.05345507167016179,
+        "tail_high": 0.022003582178792374,
+        "crest_db": 24.110169448061765,
+        "tail_peak_ratio": 0.2815474226266072,
+        "tail_rms_ratio": 0.4603059807640475
+      },
+      "decoded_tail": {
+        "rms_db": -30.499508380889893,
+        "high": 0.053909503942614095,
+        "tail_high": 0.02212207138642878,
+        "crest_db": 24.22473907470703,
+        "tail_peak_ratio": 0.27778148651123047,
+        "tail_rms_ratio": 0.4571789503097534
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -30.5,
+      "peak_db": -6.27,
+      "sha256": "e1bf4fe38e005c5810b091b527ca129e98a9c45112125477ce4fe57d8e20a644",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-3/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -32.3866081237793,
+        "high": 0.02540773129525936,
+        "tail_high": 0.015131440572463352,
+        "crest_db": 21.43456220626831,
+        "tail_peak_ratio": 0.1362435668706894,
+        "tail_rms_ratio": 0.11974901705980301
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -32.39,
+      "peak_db": -10.95,
+      "sha256": "67e275c0a622135bc4c15ac696dd799187a78246a573c4e0a1c271312af5817b",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-3/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 42.16,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 42.15999999999998,
+        "rms_db": -39.52285971720871,
+        "high": 0.07053556020849075,
+        "tail_high": 0.0013518638938312556,
+        "crest_db": 22.061554165650413,
+        "tail_peak_ratio": 0.1655537156640258,
+        "tail_rms_ratio": 0.33496923022337316
+      },
+      "decoded_tail": {
+        "rms_db": -34.654390811920166,
+        "high": 0.07409295220167456,
+        "tail_high": 0.0023691400074457316,
+        "crest_db": 22.145979404449463,
+        "tail_peak_ratio": 0.09634555876255035,
+        "tail_rms_ratio": 0.17606455087661743
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -34.65,
+      "peak_db": -12.51,
+      "sha256": "9a1802356c34cacda5bb989e0dfe5066ecbffad71e6383e83395b6935b7c928f",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-3/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 32.7,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 32.69999999999999,
+        "rms_db": -35.656732434729975,
+        "high": 0.05345507167016179,
+        "tail_high": 0.022003582178792374,
+        "crest_db": 24.110169448061765,
+        "tail_peak_ratio": 0.2815474226266072,
+        "tail_rms_ratio": 0.4603059807640475
+      },
+      "decoded_tail": {
+        "rms_db": -30.713589191436768,
+        "high": 0.05403109319023611,
+        "tail_high": 0.022342152329090235,
+        "crest_db": 24.170732498168945,
+        "tail_peak_ratio": 0.27992963790893555,
+        "tail_rms_ratio": 0.4578130543231964
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -30.71,
+      "peak_db": -6.54,
+      "sha256": "ee2c788abc51d23b0aed54e1e05969d314f38784aa5dc6c8338970c66678c247",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/mango-cheesecake/v6/stage-3/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 25.28,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 25.279999999999987,
+        "rms_db": -37.34069664725878,
+        "high": 0.025484323773987898,
+        "tail_high": 0.013600580195569282,
+        "crest_db": 21.436328898896498,
+        "tail_peak_ratio": 0.13647862463302043,
+        "tail_rms_ratio": 0.12922871888871967
+      },
+      "decoded_tail": {
+        "rms_db": -32.3866081237793,
+        "high": 0.02540773129525936,
+        "tail_high": 0.015131440572463352,
+        "crest_db": 21.43456220626831,
+        "tail_peak_ratio": 0.1362435668706894,
+        "tail_rms_ratio": 0.11974901705980301
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -32.39,
+      "peak_db": -10.95,
+      "sha256": "67e275c0a622135bc4c15ac696dd799187a78246a573c4e0a1c271312af5817b",
+      "peak_attenuation": 1.0
+    }
+  ]
+}

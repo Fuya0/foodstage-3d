@@ -10,7 +10,7 @@ describe('food definitions', () => {
       for (let stage = 0; stage < 4; stage++) {
         const sound = soundForStage(food.sound, stage);
         for (const url of [sound.bite!, sound.finish!, ...sound.chews]) {
-          expect(url).toContain(`/${food.id}/v2/stage-${stage}/`);
+          expect(url).toMatch(new RegExp(`/${food.id}/v[23456]/stage-${stage}/`));
         }
       }
     }
@@ -56,11 +56,17 @@ describe('food definitions', () => {
     }
   });
 
-  it('gets duller and heavier as a solid food is eaten through', () => {
+  it('keeps natural takes neutral while retaining legacy stage colouring', () => {
     for (const food of foods.filter(entry => entry.interaction !== 'drink')) {
       expect(food.sound.stages, `${food.id} has no stage variation`).toHaveLength(4);
       const first = soundForStage(food.sound, 0).tint!;
       const last = soundForStage(food.sound, 3).tint!;
+      if (/\/v[56]\//.test(food.sound.bite ?? '')) {
+        for (let stage = 0; stage < 4; stage++) {
+          expect(soundForStage(food.sound, stage).tint).toMatchObject({ brightness: 0, weight: 0, rate: 1, rateVariation: 0 });
+        }
+        continue;
+      }
       expect(first.brightness!, `${food.id} first stage`).toBeGreaterThan(last.brightness!);
       expect(last.weight!, `${food.id} last stage`).toBeGreaterThan(first.weight!);
       expect(first.rate!).toBeGreaterThan(last.rate!);

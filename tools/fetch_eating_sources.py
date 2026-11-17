@@ -6,6 +6,9 @@ import hashlib, json, re, requests
 ROOT = Path(__file__).resolve().parents[2]
 DEST = ROOT / '音效库' / 'freesound'
 SOURCES = [
+    ('dessert-soft', '89o_dev', 680180, 'CC0-1.0'),
+    ('banana-soft', 'CAT-FOX_ALEX', 880393, 'CC0-1.0'),
+    ('chicken-natural', 'ProductionNow', 234237, 'CC0-1.0'),
     ('chicken-soft', 'R1nkata', 723596, 'CC0-1.0'),
     ('chicken-crust', 'ty66kill', 503509, 'CC-BY-4.0'),
     ('noodles', 'marcjunker', 204114, 'CC0-1.0'),

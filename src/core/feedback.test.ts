@@ -243,6 +243,15 @@ describe('milestoneFeedback', () => {
 });
 
 describe('biteFeedback', () => {
+  it('preserves natural recording speed when rate variation is disabled', async () => {
+    const { nodes } = audioBoundary();
+    stubFetch();
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { biteFeedback } = await import('./feedback');
+    biteFeedback(settings, { ...singleChew, tint: { rate: 1, rateVariation: 0 } });
+    await flush();
+    expect(nodes.find(node => node.kind === 'source')!.playbackRate.value).toBe(1);
+  });
   it.each([{ chews: [] }, sound])('silences drink mouth audio while preserving haptics and milestone cues for %j', async (drinkSound) => {
     const { context, nodes } = audioBoundary();
     const fetch = stubFetch();
