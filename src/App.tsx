@@ -22,7 +22,6 @@ import { CHEW_SECONDS } from './scene/bite-effects';
 import { Scene, type HitTest } from './scene/Scene';
 import { useFoodInput } from './ui/useFoodInput';
 import { SceneBoundary } from './ui/SceneBoundary';
-import { HelpSheet } from './ui/HelpSheet';
 import { SettingsSheet } from './ui/SettingsSheet';
 
 import { Progress } from './ui/Progress';
@@ -48,7 +47,7 @@ function AppHeader({ settings, onSettingsChange, onBack }: { settings: Settings;
   return <header className="masthead">
     {onBack ? <button className="back-button" type="button" onClick={onBack}><ArrowLeft size={20} strokeWidth={1.8} style={{ verticalAlign: 'middle', marginRight: 7 }} aria-hidden="true" /> 返回菜品</button> : <Brand />}
     {onBack && <Brand />}
-    <nav className="header-tools" aria-label="工具"><HelpSheet /><SettingsSheet settings={settings} onChange={onSettingsChange} /></nav>
+    <nav className="header-tools" aria-label="工具"><SettingsSheet settings={settings} onChange={onSettingsChange} /></nav>
   </header>;
 }
 
@@ -248,7 +247,7 @@ export default function App() {
   return <main className="ordering-app">
     {screen === 'welcome' && <OrderWelcome reducedMotion={reducedMotion} onChoose={chooseDining} />}
     {screen === 'menu' && <>
-      <MenuHome reducedMotion={reducedMotion} cartAdded={cartAdded} onCartFeedbackEnd={() => setCartAdded(false)} tools={<><HelpSheet /><SettingsSheet settings={settings} onChange={updateSettings} /></>} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} onRecentOrder={matchingOrder ? openRecentOrder : undefined} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
+      <MenuHome reducedMotion={reducedMotion} cartAdded={cartAdded} onCartFeedbackEnd={() => setCartAdded(false)} tools={<SettingsSheet settings={settings} onChange={updateSettings} />} table={table} dining={dining} onChooseDining={() => setScreen('welcome')} onRecentOrder={matchingOrder ? openRecentOrder : undefined} items={menuItems} onOpen={openItem} onCart={() => leaveMenu('cart')} category={category} onCategoryChange={setCategory} cartCount={cart.reduce((count, line) => count + line.quantity, 0)} total={cartTotal(cart)} onDemoTable={demoTable} />
     </>}
     {screen === 'detail' && selected && <MenuItemDetail item={selected} reducedMotion={reducedMotion} draft={draft} onDraftChange={setDraft} onClose={returnToMenu} onTaste={() => setScreen('tasting')} onAdd={(choices, quantity, note) => {
       setCart(current => addLine(current, selected, Object.entries(choices).map(([groupId, choiceId]) => ({ groupId, choiceId })), quantity, note));

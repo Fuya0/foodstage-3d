@@ -4,20 +4,23 @@ export const DRAG_RADIANS_PER_PIXEL = 0.00675;
 const dragAxis = new Vector3();
 const dragRotation = new Quaternion();
 
-/** Detail-preview rotation only; tasting keeps its original fixed-order angle controls. */
+/** World-up yaw keeps level food flat; camera-right pitch remains direct after any flip. */
 export function rotateInView(orientation: Quaternion, view: Quaternion, pitch: number, yaw: number): void {
-  const angle = Math.hypot(pitch, yaw);
+  dragAxis.set(1, 0, 0).applyQuaternion(view).multiplyScalar(pitch);
+  dragAxis.y += yaw;
+  const angle = dragAxis.length();
   if (!angle) return;
-  dragAxis.set(pitch, yaw, 0).multiplyScalar(1 / angle).applyQuaternion(view);
+  dragAxis.multiplyScalar(1 / angle);
   dragRotation.setFromAxisAngle(dragAxis, angle);
   orientation.premultiply(dragRotation).normalize();
 }
 
-export interface Motion { x: number; y: number; vx: number; vy: number; shake: number; age: number; dragging: boolean; crumbPulse: number }
-export function createMotion(): Motion { return { x: 0, y: 0, vx: 0, vy: 0, shake: 0, age: 0, dragging: false, crumbPulse: 0 }; }
-/** Original tasting controls accumulate two angles; rendering composes them in XYZ order. */
+export interface Motion { orientation: Quaternion; view: Quaternion; x: number; y: number; vx: number; vy: number; shake: number; age: number; dragging: boolean; crumbPulse: number }
+export function createMotion(): Motion { return { orientation: new Quaternion(), view: new Quaternion(), x: 0, y: 0, vx: 0, vy: 0, shake: 0, age: 0, dragging: false, crumbPulse: 0 }; }
+/** Angle totals are telemetry; the quaternion is the rendered pose and survives stage swaps. */
 export function rotateMotion(motion: Motion, pitch: number, yaw: number): void {
   motion.x += pitch; motion.y += yaw;
+  rotateInView(motion.orientation, motion.view, pitch, yaw);
 }
 export function impulse(motion: Motion, strength = 0.08): void {
   motion.shake = Math.min(1, motion.shake + strength);

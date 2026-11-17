@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { ACESFilmicToneMapping, SRGBColorSpace, BufferAttribute, BufferGeometry, Group, PMREMGenerator, Points, Raycaster, Vector2, Mesh, type Material, type PerspectiveCamera } from 'three';
+import { ACESFilmicToneMapping, SRGBColorSpace, BufferAttribute, BufferGeometry, Group, PMREMGenerator, Points, Quaternion, Vector3, Raycaster, Vector2, Mesh, type Material, type PerspectiveCamera } from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { SequenceState, SequenceEvent } from '../core/sequence';
 import type { ModelAsset } from './assets';
@@ -25,6 +25,7 @@ function Food({ asset, base, state, motion, stage, reduced, dispatch, setHit, zo
   const rotation = useRef<Group>(null), shakeGroup = useRef<Group>(null), crumbPoints = useRef<Points>(null);
   const seenCrumbPulse = useRef(0);
   const entrance = useRef(0);
+  const revealPose = useMemo(() => ({ rotation: new Quaternion(), up: new Vector3(0, 1, 0) }), []);
   const incoming = useRef<Group>(null), outgoing = useRef<Group>(null);
   const { camera, size, gl } = useThree();
   const ownedMaterials = useRef(new Set<Material>());
@@ -74,7 +75,8 @@ function Food({ asset, base, state, motion, stage, reduced, dispatch, setHit, zo
     cam.near = Math.max(radius / 100, 0.0001);
     cam.far = distance + radius * 10;
     cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
-  }, [camera, size, base]);
+    motion.view.copy(cam.quaternion);
+  }, [camera, size, base, motion]);
   useEffect(() => {
     const ray = new Raycaster(), point = new Vector2();
     const hitTest: HitTest = (x, y) => {
@@ -106,7 +108,8 @@ function Food({ asset, base, state, motion, stage, reduced, dispatch, setHit, zo
     gl.domElement.dataset.stageBlend = String(blend);
     entrance.current = motion.dragging ? 2 : Math.min(2, entrance.current + dt);
     const reveal = reduced ? 0 : 0.38 * Math.pow(1 - entrance.current / 2, 3);
-    rotation.current.rotation.set(motion.x, motion.y + reveal, 0, 'XYZ');
+    rotation.current.quaternion.copy(motion.orientation);
+    if (reveal) rotation.current.quaternion.premultiply(revealPose.rotation.setFromAxisAngle(revealPose.up, reveal));
     const smooth = 1 - Math.exp(-Math.min(dt, 0.1) * 8);
     const cam = camera as PerspectiveCamera;
     if (Math.abs(cam.zoom - zoom) > 0.0001) {

@@ -96,8 +96,8 @@ h1 { margin: 0; font-size: 29px; font-weight: 950; letter-spacing: -2px; line-he
 .finished-stamp { display: grid; place-items: center; width: 86px; height: 86px; margin-bottom: 20px; border: 3px solid var(--accent); border-radius: 50%; color: var(--accent); font-weight: 900; transform: rotate(-12deg); }
 .finished-state h2 { margin: 0 0 9px; font-size: 38px; font-weight: 900; }
 .finished-state p { margin: 0; color: var(--muted); font-size: 14px; }
-.help-sheet, .settings-sheet { width: min(460px, calc(100% - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 2px solid var(--ink); border-radius: 20px; color: var(--ink); background: var(--paper); box-shadow: 0 16px 60px #38221840; }
-.help-sheet::backdrop, .settings-sheet::backdrop { background: #38221880; }
+.settings-sheet { width: min(460px, calc(100% - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 2px solid var(--ink); border-radius: 20px; color: var(--ink); background: var(--paper); box-shadow: 0 16px 60px #38221840; }
+.settings-sheet::backdrop { background: #38221880; }
 .sheet-content { padding: 28px; }
 .sheet-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .sheet-heading h2 { margin: 0; font-size: 26px; font-weight: 900; }
@@ -153,7 +153,7 @@ h1 { margin: 0; font-size: 29px; font-weight: 950; letter-spacing: -2px; line-he
   .food-caption { font-size: 10px; }
   .interaction-hint { padding: 8px 10px; gap: 3px; font-size: 10px; }
   .interaction-hint span:first-child { font-size: 12px; }
-  .help-sheet, .settings-sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 20px 20px 0 0; }
+  .settings-sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 20px 20px 0 0; }
   .sheet-content { padding: 23px 22px max(27px, env(safe-area-inset-bottom)); }
 }
 @media (max-width: 360px) {

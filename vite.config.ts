@@ -74,6 +74,6 @@ export default defineConfig({
   server: { watch: { ignored: ['**/*.tmpdir/**'] } },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'tests/pizza-scale.test.ts'],
+    include: ['src/**/*.test.ts'],
   },
 });

@@ -63,10 +63,10 @@ export function FoodHoloStage({ item, reducedMotion, variant }: IllustrationProp
     '--light-x': `${pose.x * 100}%`,
     '--light-y': `${pose.y * 100}%`,
     '--foil-angle': `${115 + x * 58 - y * 28}deg`,
-    transform: reducedMotion ? undefined : `perspective(920px) rotateX(${-y * 18}deg) rotateY(${x * 22}deg) scale(${1 + 0.018 * pose.strength})`,
+    transform: reducedMotion ? undefined : `scale(${1 + 0.018 * pose.strength})`,
   };
 
-  const model = <MenuFoodVisual item={item} variant={variant} holo={pose} />;
+  const model = <MenuFoodVisual item={item} variant={variant} holo={pose} reducedMotion={reducedMotion} />;
   const floating = variant === 'hero';
   return <div className={floating ? 'food-holo-stage food-holo-stage--hero' : 'food-holo-stage'}
       role="group" aria-label={floating ? `${item.name}互动模型` : `${item.name}展示卡`}
