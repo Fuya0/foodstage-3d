@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { foodById, foods, soundForStage } from './foods';
 
 describe('food definitions', () => {
+  it('ships the recordings selected at every remaining-portion stage', () => {
+    for (const food of foods.filter(item => item.interaction !== 'drink')) {
+      const first = soundForStage(food.sound, 0);
+      const last = soundForStage(food.sound, 3);
+      expect(first.bite).not.toBe(last.bite);
+      for (let stage = 0; stage < 4; stage++) {
+        const sound = soundForStage(food.sound, stage);
+        for (const url of [sound.bite!, sound.finish!, ...sound.chews]) {
+          expect(url).toContain(`/${food.id}/v2/stage-${stage}/`);
+        }
+      }
+    }
+  });
   it('has four stage definitions for crispy chicken', () => {
     const food = foodById('crispy-chicken');
     expect(food.stages).toHaveLength(4);

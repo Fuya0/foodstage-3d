@@ -1,5 +1,17 @@
 # 食物音效
 
+## 2026-11-17：当前使用 v2
+
+五种固体食物已切换到各自 `v2/stage-0` 至 `v2/stage-3` 的实录片段，映射在 `src/data/eating-audio.json`。下文原目录和旧处理记录保留供回退。气泡饮维持原专用吸饮素材。
+
+- 炸鸡混入 R1nkata 的软鸡肉实录；披萨改用用户提供的披萨录音。
+- 剩余量只带来小幅音量、质感变化，随机变速收敛到 ±0.8%，每口保留自然口腔质地。
+- 每个 `v2/SOURCE.md` 和 `v2/manifest.json` 记录来源、授权、切点、混合比例及编码后响度。
+- 在双项目工作区运行 `python foodstage-3d/tools/build_eating_audio.py` 重制；运行 `python foodstage-3d/tools/audit_eating_audio.py` 检查全部 144 段并生成对比试听。
+- 原始新增实录保存在工作区 `音效库/freesound`，可通过 `tools/fetch_eating_sources.py` 获取；不依赖在线服务播放。
+
+---
+
 每种食物一套自己的口腔声，放在 `public/audio/<food-id>/` 下，与 `src/data/foods.ts` 里的 `FoodDefinition.id` 同名。软汉堡、脆薯条、韧披萨、绵蛋糕、气泡饮不能共用同一批素材——质地不同，声音就必须不同。
 
 ## 目录约定
