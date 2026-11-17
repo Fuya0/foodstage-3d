@@ -3,10 +3,16 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { foodById } from '../data/foods';
 import { applyFoodMaterials } from './food-materials';
+import type { PreparedPreview } from './assets';
 
 export interface PreviewAsset { scene: Group; center: Vector3; scale: number; radius: number }
 
 const models = new Map<string, Promise<PreviewAsset>>();
+const completed = new Map<string, PreparedPreview>();
+export function getReadyPreview(url: string): PreparedPreview | undefined {
+  const entry = completed.get(url);
+  return entry ? { url, asset: { scene: entry.asset.scene, center: entry.asset.center.clone(), size: entry.asset.size.clone() } } : undefined;
+}
 const networkQueue: (() => void)[] = [];
 let activeRequests = 0;
 const MAX_PREVIEW_REQUESTS = 2;
@@ -72,6 +78,7 @@ export function loadPreview(foodId: string, previewModelUrl?: string): Promise<P
       }
     });
     const radius = radiusSquared > 0 ? Math.sqrt(radiusSquared) * 2 / extent : size.length() / extent;
+    completed.set(url, { url, asset: { scene: gltf.scene, center: center.clone(), size: size.clone() } });
     return { scene: gltf.scene, center, scale: 2 / extent, radius };
   })();
   models.set(cacheKey, request);

@@ -43,6 +43,8 @@ export interface SipSound {
 export interface SoundTint {
   /** Playback rate multiplier: >1 crisper and faster, <1 heavier and slower. */
   readonly rate?: number;
+  /** Random rate range around 1; zero preserves the original recording speed. */
+  readonly rateVariation?: number;
   /** Linear gain multiplier. */
   readonly gain?: number;
   /** High-shelf gain in dB at 3 kHz: positive crisper, negative duller. */
@@ -224,9 +226,11 @@ export const foods: readonly FoodDefinition[] = foodDefinitions.map(food => {
     return {
       bite: take.bite, chews: [take['chew-1'], take['chew-2']], finish: take.finish,
       tint: {
+        ...(/\/v[56]\//.test(take.bite) ? { brightness: 0, weight: 0, rate: 1, rateVariation: 0 } : {
         brightness: (previous?.brightness ?? 0) * 0.25,
         weight: (previous?.weight ?? 0) * 0.25,
         rate: 1 + ((previous?.rate ?? 1) - 1) * 0.2,
+        }),
       },
     };
   });

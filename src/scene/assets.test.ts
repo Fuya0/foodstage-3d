@@ -3,7 +3,7 @@ import { BoxGeometry, Group, Mesh, MeshStandardMaterial, Texture } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { manifest } from '../data/manifest';
 import { foodById } from '../data/foods';
-import { loadPreview } from './menu-preview-asset';
+import { getReadyPreview, loadPreview } from './menu-preview-asset';
 import { createModelStore } from './assets';
 
 describe('shared runtime model requests', () => {
@@ -113,5 +113,36 @@ describe('cancelable tasting models', () => {
     expect(parse).not.toHaveBeenCalled();
     expect(await store.retry(0)).toMatchObject({ status: 'ready' });
     expect(fetchModel).toHaveBeenCalledTimes(2);
+  });
+});
+
+
+describe('borrowing an already prepared first stage', () => {
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  it('skips a second download and parse, and never disposes the preview-owned model', async () => {
+    const url = '/models-runtime/prepared-cache-regression.glb';
+    const scene = new Group(), geometry = new BoxGeometry(2, 1, 1);
+    scene.add(new Mesh(geometry, new MeshStandardMaterial()));
+    vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockResolvedValue({ scene } as GLTF);
+    const parse = vi.spyOn(GLTFLoader.prototype, 'parseAsync');
+    const fetchModel = vi.fn(); vi.stubGlobal('fetch', fetchModel);
+    const dispose = vi.spyOn(geometry, 'dispose');
+    await loadPreview('completed-cache', url);
+    const ready = getReadyPreview(url);
+    expect(ready).toMatchObject({ url, asset: { scene } });
+    const store = createModelStore([{ ...manifest[0]!, url }], ready);
+    expect(await store.load(0)).toMatchObject({ status: 'ready', asset: { scene } });
+    expect(parse).not.toHaveBeenCalled(); expect(fetchModel).not.toHaveBeenCalled();
+    store.stop(); expect(dispose).not.toHaveBeenCalled();
+  });
+  it('never exposes an in-flight preview as a borrowed model', async () => {
+    const url = '/models-runtime/pending-cache-regression.glb';
+    let finish!: (value: GLTF) => void;
+    vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const pending = loadPreview('pending-cache', url);
+    expect(getReadyPreview(url)).toBeUndefined();
+    const scene = new Group(); scene.add(new Mesh(new BoxGeometry(), new MeshStandardMaterial()));
+    finish({ scene } as GLTF); await pending;
+    expect(getReadyPreview(url)).toMatchObject({ url, asset: { scene } });
   });
 });

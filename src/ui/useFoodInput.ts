@@ -1,9 +1,11 @@
-import { useCallback, useRef, type PointerEvent } from 'react';
+import { useCallback, useEffect, useRef, type PointerEvent } from 'react';
 import { beginGesture, moveGesture, endGesture, isTap, type Gesture } from '../core/gesture';
-import { DRAG_RADIANS_PER_PIXEL, rotateMotion, type Motion } from '../scene/motion';
+import { DRAG_RADIANS_PER_PIXEL, cancelMotionReturn, scheduleMotionReturn, rotateMotion, type Motion } from '../scene/motion';
 import type { HitTest } from '../scene/Scene';
 
-export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null>, playable: boolean, bite: () => void, sensitivity: number, zoomBy: (factor: number) => void) {
+export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null>, playable: boolean, bite: () => void, sensitivity: number, zoomBy: (factor: number) => void, reducedMotion = false) {
+  const container = useRef<HTMLDivElement | null>(null), visible = useRef(true);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const active = useRef<{ id: number; gesture: Gesture; x: number; y: number; time: number } | null>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchDistance = useRef(0);
@@ -13,15 +15,42 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
   }
   const attachWheel = useCallback((element: HTMLDivElement | null) => {
     if (!element) return;
+    if (container.current && container.current !== element) observerRef.current?.unobserve(container.current);
+    container.current = element; visible.current = !document.hidden;
+    observerRef.current?.observe(element);
     const wheel = (event: WheelEvent) => {
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       zoomBy(Math.exp(-event.deltaY * 0.008));
     };
     element.addEventListener('wheel', wheel, { passive: false });
-    return () => element.removeEventListener('wheel', wheel);
+    return () => {
+      element.removeEventListener('wheel', wheel); observerRef.current?.unobserve(element);
+      if (container.current === element) { container.current = null; visible.current = false; clear(); pointers.current.clear(); pinchDistance.current = 0; motion.vx = 0; motion.vy = 0; cancelMotionReturn(motion); }
+    };
   }, [zoomBy]);
   function clear() { active.current = null; motion.dragging = false; }
+  function queueReturn() { if (visible.current && !reducedMotion && !pointers.current.size) scheduleMotionReturn(motion, performance.now()); }
+  useEffect(() => {
+    const reset = () => { clear(); pointers.current.clear(); pinchDistance.current = 0; motion.vx = 0; motion.vy = 0; cancelMotionReturn(motion); };
+    let inView = true;
+    const visibility = () => { visible.current = Boolean(container.current) && inView && !document.hidden; if (!visible.current) reset(); else queueReturn(); };
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => { const entry = entries.find(value => value.target === container.current); if (!entry) return; inView = entry.isIntersecting; visibility(); });
+    observerRef.current = observer;
+    if (container.current) observer?.observe(container.current);
+    if (reducedMotion) cancelMotionReturn(motion);
+    document.addEventListener('visibilitychange', visibility); visibility();
+    return () => { observer?.disconnect(); if (observerRef.current === observer) observerRef.current = null; document.removeEventListener('visibilitychange', visibility); reset(); };
+  }, [motion, reducedMotion]);
+  function cancelPointer(event: PointerEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
+    const tracked = pointers.current.delete(event.pointerId);
+    if (!tracked && active.current?.id !== event.pointerId) return;
+    pinchDistance.current = distance();
+    if (active.current?.id === event.pointerId) active.current = null;
+    motion.dragging = pointers.current.size > 0;
+    if (!motion.dragging) { motion.vx = 0; motion.vy = 0; queueReturn(); }
+  }
   return {
     ref: attachWheel,
     onPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -31,13 +60,13 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
       // Capture even a miss so an outside release always clears tracked pointers.
       event.currentTarget.setPointerCapture(event.pointerId);
       if (pointers.current.size > 1) {
-        clear(); motion.vx = 0; motion.vy = 0;
+        clear(); cancelMotionReturn(motion); motion.dragging = true; motion.vx = 0; motion.vy = 0;
         pinchDistance.current = distance();
         return;
       }
       if (!playable || !event.isPrimary || !hit.current?.(event.clientX, event.clientY)) return;
       event.currentTarget.focus(); event.currentTarget.setPointerCapture(event.pointerId);
-      motion.vx = 0; motion.vy = 0; motion.dragging = true;
+      cancelMotionReturn(motion); motion.vx = 0; motion.vy = 0; motion.dragging = true;
       active.current = { id: event.pointerId, gesture: beginGesture(event.clientX, event.clientY, event.timeStamp), x: event.clientX, y: event.clientY, time: event.timeStamp };
     },
     onPointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -62,17 +91,17 @@ export function useFoodInput(motion: Motion, hit: React.RefObject<HitTest | null
     },
     onPointerUp(event: PointerEvent<HTMLDivElement>) {
       pointers.current.delete(event.pointerId); pinchDistance.current = distance();
-      const pointer = active.current; clear();
+      const pointer = active.current; clear(); motion.dragging = pointers.current.size > 0; queueReturn();
       if (!pointer || pointer.id !== event.pointerId) return;
       if (event.timeStamp - pointer.time > 80) { motion.vx = 0; motion.vy = 0; }
       if (playable && isTap(endGesture(pointer.gesture, event.clientX, event.clientY, event.timeStamp))) bite();
       if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     },
-    onPointerCancel(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); clear(); motion.vx = 0; motion.vy = 0; },
-    onLostPointerCapture(event: PointerEvent<HTMLDivElement>) { pointers.current.delete(event.pointerId); pinchDistance.current = distance(); if (active.current?.id === event.pointerId) { clear(); motion.vx = 0; motion.vy = 0; } },
+    onPointerCancel: cancelPointer,
+    onLostPointerCapture: cancelPointer,
     onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
       if (event.target !== event.currentTarget || (event.key !== ' ' && event.key !== 'Enter')) return;
-      event.preventDefault(); if (playable && !event.repeat) bite();
+      event.preventDefault(); if (playable && !event.repeat) { cancelMotionReturn(motion); bite(); queueReturn(); }
     },
   };
 }

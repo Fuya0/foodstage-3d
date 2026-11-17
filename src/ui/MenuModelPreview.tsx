@@ -169,7 +169,7 @@ export default function MenuModelPreview({ foodId, name, onClose, showClose = tr
   }
   function scheduleReturn() {
     cancelReturn();
-    if (variant !== 'detail' || reducedMotion || !active || !ready || pose.orientation.angleTo(pose.home) < 0.001) return;
+    if (reducedMotion || !active || !ready || pose.orientation.angleTo(pose.home) < 0.001) return;
     returnTimer.current = setTimeout(() => {
       returnTimer.current = null;
       if (drag.current) return;

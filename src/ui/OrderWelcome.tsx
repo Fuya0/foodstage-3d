@@ -40,7 +40,7 @@ export function OrderWelcome({ onChoose, reducedMotion }: {
 
       <div className="welcome-poster">
         <div className="welcome-poster-copy">
-          <h1 id="welcome-heading">今天，<br /><strong>怎么吃？</strong></h1>
+          <h1 id="welcome-heading">今天，<br /><strong>吃什么？</strong></h1>
           <p>请选择用餐方式。</p>
         </div>
         <figure className="welcome-hero-art">

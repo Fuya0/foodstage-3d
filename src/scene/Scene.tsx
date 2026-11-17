@@ -89,12 +89,13 @@ function Food({ asset, base, state, motion, stage, reduced, dispatch, setHit, zo
     setHit(hitTest);
     return () => {
       if (hitRef.current === hitTest) hitRef.current = null;
+      setHit(null, hitTest);
     };
   }, [camera, gl, setHit]);
   useFrame((_, dt) => {
     const finishingBurst = motion.shake > 0.8;
     const frameDt = Math.min(dt, 1 / 30);
-    stepMotion(motion, frameDt);
+    stepMotion(motion, frameDt, performance.now(), reduced);
     if (!rotation.current || !shakeGroup.current) return;
     blendAge.current += dt;
     const blend = stageBlend(blendAge.current, reduced);

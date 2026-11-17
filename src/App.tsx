@@ -17,6 +17,7 @@ import { createSequenceState, sequenceReducer, type SequenceEvent } from './core
 import { readSettings, saveSettings, type Settings } from './core/settings';
 import { biteFeedback, cancelBiteAudio, primeBiteAudio, primeMilestoneAudio, milestoneFeedback } from './core/feedback';
 import { createModelStore } from './scene/assets';
+import { getReadyPreview } from './scene/menu-preview-asset';
 import { createMotion, impulse } from './scene/motion';
 import { CHEW_SECONDS } from './scene/bite-effects';
 import { Scene, type HitTest } from './scene/Scene';
@@ -52,7 +53,7 @@ function AppHeader({ settings, onSettingsChange, onBack }: { settings: Settings;
 }
 
 function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }: { item: MenuItem; food: FoodDefinition; settings: Settings; reduced: boolean; onSettingsChange: (settings: Settings) => void; onBack: () => void }) {
-  const [store] = useState(() => createModelStore(food.stages));
+  const [store] = useState(() => createModelStore(food.stages, getReadyPreview(food.stages[0]!.url)));
   const entries = useSyncExternalStore(store.subscribe, store.getSnapshot);
   const reducer = useCallback((state: ReturnType<typeof createSequenceState>, event: SequenceEvent) => sequenceReducer(food.stages, state, event), [food.stages]);
   const [state, dispatch] = useReducer(reducer, undefined, () => createSequenceState(food.stages));
@@ -116,6 +117,7 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
     }, CHEW_SECONDS * 1000);
   }, [contextLost, food.stages, food.sound, food.interaction, hitReady, motion, settings, state.bites, state.phase, state.stage]);
   const restart = () => {
+    setHit(null);
     if (chewTimer.current) clearTimeout(chewTimer.current);
     chewTimer.current = null;
     setChewing(false);
@@ -124,7 +126,7 @@ function PlayScreen({ item, food, settings, reduced, onSettingsChange, onBack }:
     dispatch({ type: 'RESTART' });
   };
   const playable = state.phase === 'idle' && !contextLost && hitReady;
-  const input = useFoodInput(motion, hit, playable, bite, settings.sensitivity, zoomBy);
+  const input = useFoodInput(motion, hit, playable, bite, settings.sensitivity, zoomBy, reduced);
   const current = entries[state.stage];
   const base = entries[0];
   const needed = state.phase === 'loading' ? 0 : state.phase === 'waiting' ? state.stage + 1 : -1;

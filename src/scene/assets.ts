@@ -6,6 +6,8 @@ import { manifest } from '../data/manifest';
 import type { FoodStage } from '../data/foods';
 import { applyFoodMaterials } from './food-materials';
 export interface ModelAsset { scene: Group; center: Vector3; size: Vector3 }
+/** Read-only source owned by the completed, app-lifetime menu preview cache. */
+export interface PreparedPreview { url: string; asset: ModelAsset }
 
 function disposeCancelledModel(scene: Group): void {
   const geometries = new Set<BufferGeometry>();
@@ -29,11 +31,15 @@ function disposeCancelledModel(scene: Group): void {
   for (const image of images) image.close();
 }
 
-export function createModelStore(stages: readonly FoodStage[] = manifest) {
+export function createModelStore(stages: readonly FoodStage[] = manifest, preparedPreview?: PreparedPreview) {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   return new AssetStore<ModelAsset>(stages.length, async (index, signal) => {
     const url = stages[index]!.url;
+    signal.throwIfAborted();
+    // Borrow only a completed first stage. Pending requests stay session-owned
+    // so exiting tasting can never abort another viewer or close its textures.
+    if (index === 0 && preparedPreview?.url === url) return preparedPreview.asset;
     // Isolate the session's fetch: Three's FileLoader shares same-URL requests with menu previews.
     const response = await fetch(url, { signal });
     if (!response.ok) throw new Error(`Failed to load model ${url}: ${response.status}`);

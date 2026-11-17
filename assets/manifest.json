@@ -201,7 +201,7 @@
               0,
               0
             ],
-            "yaw": 0
+            "yaw": 3.141592653589793
           },
           "presentation": "physical-size-stable"
         },
@@ -214,7 +214,7 @@
               0,
               0
             ],
-            "yaw": 0
+            "yaw": 3.141592653589793
           },
           "presentation": "physical-size-stable"
         },
@@ -227,7 +227,7 @@
               0,
               0
             ],
-            "yaw": 0
+            "yaw": 3.141592653589793
           },
           "presentation": "physical-size-stable"
         }
@@ -1103,7 +1103,7 @@
           0,
           0
         ],
-        "yaw": 0
+        "yaw": 3.141592653589793
       },
       "presentation": "physical-size-stable"
     },
@@ -1158,7 +1158,7 @@
           0,
           0
         ],
-        "yaw": 0
+        "yaw": 3.141592653589793
       },
       "presentation": "physical-size-stable"
     },
@@ -1213,7 +1213,7 @@
           0,
           0
         ],
-        "yaw": 0
+        "yaw": 3.141592653589793
       },
       "presentation": "physical-size-stable"
     },
@@ -1665,18 +1665,18 @@
   "runtimeFiles": [
     {
       "path": "public/models-runtime/burger-0.glb",
-      "sha256": "407fff4b0e9c73f1566e8f147518c5d7b27b63113e288f529762c8d2b04b6894",
-      "bytes": 3790360,
+      "sha256": "78138af73d2e69935e3971555f175ab8d9ae81100915ea3530d5fb0458ba19ac",
+      "bytes": 2912020,
       "dimensionsMm": [
         65534000,
-        54454000,
+        54466000,
         65374000
       ]
     },
     {
       "path": "public/models-runtime/burger-1.glb",
-      "sha256": "2102dc08392607b0473844da385105f8afbb471d2f79c84449ebaebc1ff48764",
-      "bytes": 3087852,
+      "sha256": "e0f9648da696ba60b8275e5c44c6e55e363b1366599378a02abe402312bec94c",
+      "bytes": 2389100,
       "dimensionsMm": [
         65534000,
         51710000,
@@ -1685,18 +1685,18 @@
     },
     {
       "path": "public/models-runtime/burger-2.glb",
-      "sha256": "aa867493ecc652eed53a7f520fba2c4fd311ad95f0b963e611a6d04e3a885090",
-      "bytes": 3995024,
+      "sha256": "0863a102296029840b733ad01e71a3a6d2bf770204e5cbe4405539d58640a9ed",
+      "bytes": 3060236,
       "dimensionsMm": [
         65534000,
-        42516000,
+        42492000,
         60302000
       ]
     },
     {
       "path": "public/models-runtime/burger-3.glb",
-      "sha256": "dab4fe6cffcccc5373f15f4f39ea5db8696b2b563a542357984143efce13ddee",
-      "bytes": 4580312,
+      "sha256": "638ca4f9359ecb0ec275035a22a0f41958def0a689d7acee7cecde839a4de5a0",
+      "bytes": 3576676,
       "dimensionsMm": [
         65534000,
         63430000,
@@ -1984,5 +1984,5 @@
       ]
     }
   ],
-  "runtimeGeneratedAt": "2026-11-16T14:17:16.030812+00:00"
+  "runtimeGeneratedAt": "2026-11-17T16:28:05.827936+00:00"
 }
