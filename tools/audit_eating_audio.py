@@ -26,8 +26,9 @@ def main():
                 for role in ['bite', 'chew-1' if stage%2 == 0 else 'chew-2', 'finish']:
                     reel.extend([decode(ROOT/project/'public'/files[role].lstrip('/')), np.zeros(round(SR*.20))])
                 reel.append(np.zeros(round(SR*.9)))
+            suffix = '-v3' if '/v3/' in stages[0]['bite'] else ''
             subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-',
-                '-codec:a','libmp3lame','-b:a','128k',str(auditions/f'{dish}-four-stages.mp3')],
+                '-codec:a','libmp3lame','-b:a','128k',str(auditions/f'{dish}-four-stages{suffix}.mp3')],
                 input=np.concatenate(reel).astype('<f4').tobytes(), check=True)
     report = dict(count=len(all_rows), peak_db_max=max(r['peak_db'] for r in all_rows),
         rms_db_range=[min(r['rms_db'] for r in all_rows),max(r['rms_db'] for r in all_rows)], clips=all_rows)

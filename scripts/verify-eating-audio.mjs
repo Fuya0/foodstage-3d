@@ -7,7 +7,8 @@ const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const browser = await chromium.launch({ executablePath: existsSync(chrome) ? chrome : existsSync(edge) ? edge : undefined,
   args: ['--autoplay-policy=no-user-gesture-required'] });
 try {
-  for (const [folder, port] of [['foodstage-3d', 4181], ['xlsk', 4182]]) {
+  const production = process.argv.includes('--production');
+  for (const [folder, port] of [['foodstage-3d', production ? 4183 : 4181], ['xlsk', production ? 4184 : 4182]]) {
     const manifest = JSON.parse(readFileSync(resolve('..', folder, 'src/data/eating-audio.json'), 'utf8'));
     const urls = Object.values(manifest).flatMap(stages => stages.flatMap(stage => Object.values(stage)));
     const page = await browser.newPage();
@@ -27,7 +28,7 @@ try {
       return { decoded: urls.length - failures.length, failures };
     }, urls);
     if (result.failures.length) throw Error(JSON.stringify(result));
-    if (folder === 'xlsk') {
+    if (folder === 'xlsk' && !production) {
       const playback = await page.evaluate(async () => {
         const starts = [], stops = [];
         const originalStart = AudioBufferSourceNode.prototype.start;

@@ -1,4 +1,5 @@
 node_modules/
+/音效库/
 dist/
 test-results/
 playwright-report/
