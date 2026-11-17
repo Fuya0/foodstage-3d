@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "test": "vitest run",
+    "verify:audio": "node scripts/verify-audio.mjs",
     "test:browser": "playwright test",
     "test:browser:interactions": "playwright test --config .codex/playwright.config.ts",
     "typecheck": "tsc --noEmit",

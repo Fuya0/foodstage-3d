@@ -1,0 +1,132 @@
+{
+  "classic-burger": [
+    {
+      "bite": "/audio/classic-burger/v2/stage-0/bite.mp3",
+      "chew-1": "/audio/classic-burger/v2/stage-0/chew-1.mp3",
+      "chew-2": "/audio/classic-burger/v2/stage-0/chew-2.mp3",
+      "finish": "/audio/classic-burger/v2/stage-0/finish.mp3"
+    },
+    {
+      "bite": "/audio/classic-burger/v2/stage-1/bite.mp3",
+      "chew-1": "/audio/classic-burger/v2/stage-1/chew-1.mp3",
+      "chew-2": "/audio/classic-burger/v2/stage-1/chew-2.mp3",
+      "finish": "/audio/classic-burger/v2/stage-1/finish.mp3"
+    },
+    {
+      "bite": "/audio/classic-burger/v2/stage-2/bite.mp3",
+      "chew-1": "/audio/classic-burger/v2/stage-2/chew-1.mp3",
+      "chew-2": "/audio/classic-burger/v2/stage-2/chew-2.mp3",
+      "finish": "/audio/classic-burger/v2/stage-2/finish.mp3"
+    },
+    {
+      "bite": "/audio/classic-burger/v2/stage-3/bite.mp3",
+      "chew-1": "/audio/classic-burger/v2/stage-3/chew-1.mp3",
+      "chew-2": "/audio/classic-burger/v2/stage-3/chew-2.mp3",
+      "finish": "/audio/classic-burger/v2/stage-3/finish.mp3"
+    }
+  ],
+  "crispy-chicken": [
+    {
+      "bite": "/audio/crispy-chicken/v2/stage-0/bite.mp3",
+      "chew-1": "/audio/crispy-chicken/v2/stage-0/chew-1.mp3",
+      "chew-2": "/audio/crispy-chicken/v2/stage-0/chew-2.mp3",
+      "finish": "/audio/crispy-chicken/v2/stage-0/finish.mp3"
+    },
+    {
+      "bite": "/audio/crispy-chicken/v2/stage-1/bite.mp3",
+      "chew-1": "/audio/crispy-chicken/v2/stage-1/chew-1.mp3",
+      "chew-2": "/audio/crispy-chicken/v2/stage-1/chew-2.mp3",
+      "finish": "/audio/crispy-chicken/v2/stage-1/finish.mp3"
+    },
+    {
+      "bite": "/audio/crispy-chicken/v2/stage-2/bite.mp3",
+      "chew-1": "/audio/crispy-chicken/v2/stage-2/chew-1.mp3",
+      "chew-2": "/audio/crispy-chicken/v2/stage-2/chew-2.mp3",
+      "finish": "/audio/crispy-chicken/v2/stage-2/finish.mp3"
+    },
+    {
+      "bite": "/audio/crispy-chicken/v2/stage-3/bite.mp3",
+      "chew-1": "/audio/crispy-chicken/v2/stage-3/chew-1.mp3",
+      "chew-2": "/audio/crispy-chicken/v2/stage-3/chew-2.mp3",
+      "finish": "/audio/crispy-chicken/v2/stage-3/finish.mp3"
+    }
+  ],
+  "rosemary-fries": [
+    {
+      "bite": "/audio/rosemary-fries/v2/stage-0/bite.mp3",
+      "chew-1": "/audio/rosemary-fries/v2/stage-0/chew-1.mp3",
+      "chew-2": "/audio/rosemary-fries/v2/stage-0/chew-2.mp3",
+      "finish": "/audio/rosemary-fries/v2/stage-0/finish.mp3"
+    },
+    {
+      "bite": "/audio/rosemary-fries/v2/stage-1/bite.mp3",
+      "chew-1": "/audio/rosemary-fries/v2/stage-1/chew-1.mp3",
+      "chew-2": "/audio/rosemary-fries/v2/stage-1/chew-2.mp3",
+      "finish": "/audio/rosemary-fries/v2/stage-1/finish.mp3"
+    },
+    {
+      "bite": "/audio/rosemary-fries/v2/stage-2/bite.mp3",
+      "chew-1": "/audio/rosemary-fries/v2/stage-2/chew-1.mp3",
+      "chew-2": "/audio/rosemary-fries/v2/stage-2/chew-2.mp3",
+      "finish": "/audio/rosemary-fries/v2/stage-2/finish.mp3"
+    },
+    {
+      "bite": "/audio/rosemary-fries/v2/stage-3/bite.mp3",
+      "chew-1": "/audio/rosemary-fries/v2/stage-3/chew-1.mp3",
+      "chew-2": "/audio/rosemary-fries/v2/stage-3/chew-2.mp3",
+      "finish": "/audio/rosemary-fries/v2/stage-3/finish.mp3"
+    }
+  ],
+  "pepperoni-pizza": [
+    {
+      "bite": "/audio/pepperoni-pizza/v2/stage-0/bite.mp3",
+      "chew-1": "/audio/pepperoni-pizza/v2/stage-0/chew-1.mp3",
+      "chew-2": "/audio/pepperoni-pizza/v2/stage-0/chew-2.mp3",
+      "finish": "/audio/pepperoni-pizza/v2/stage-0/finish.mp3"
+    },
+    {
+      "bite": "/audio/pepperoni-pizza/v2/stage-1/bite.mp3",
+      "chew-1": "/audio/pepperoni-pizza/v2/stage-1/chew-1.mp3",
+      "chew-2": "/audio/pepperoni-pizza/v2/stage-1/chew-2.mp3",
+      "finish": "/audio/pepperoni-pizza/v2/stage-1/finish.mp3"
+    },
+    {
+      "bite": "/audio/pepperoni-pizza/v2/stage-2/bite.mp3",
+      "chew-1": "/audio/pepperoni-pizza/v2/stage-2/chew-1.mp3",
+      "chew-2": "/audio/pepperoni-pizza/v2/stage-2/chew-2.mp3",
+      "finish": "/audio/pepperoni-pizza/v2/stage-2/finish.mp3"
+    },
+    {
+      "bite": "/audio/pepperoni-pizza/v2/stage-3/bite.mp3",
+      "chew-1": "/audio/pepperoni-pizza/v2/stage-3/chew-1.mp3",
+      "chew-2": "/audio/pepperoni-pizza/v2/stage-3/chew-2.mp3",
+      "finish": "/audio/pepperoni-pizza/v2/stage-3/finish.mp3"
+    }
+  ],
+  "mango-cheesecake": [
+    {
+      "bite": "/audio/mango-cheesecake/v2/stage-0/bite.mp3",
+      "chew-1": "/audio/mango-cheesecake/v2/stage-0/chew-1.mp3",
+      "chew-2": "/audio/mango-cheesecake/v2/stage-0/chew-2.mp3",
+      "finish": "/audio/mango-cheesecake/v2/stage-0/finish.mp3"
+    },
+    {
+      "bite": "/audio/mango-cheesecake/v2/stage-1/bite.mp3",
+      "chew-1": "/audio/mango-cheesecake/v2/stage-1/chew-1.mp3",
+      "chew-2": "/audio/mango-cheesecake/v2/stage-1/chew-2.mp3",
+      "finish": "/audio/mango-cheesecake/v2/stage-1/finish.mp3"
+    },
+    {
+      "bite": "/audio/mango-cheesecake/v2/stage-2/bite.mp3",
+      "chew-1": "/audio/mango-cheesecake/v2/stage-2/chew-1.mp3",
+      "chew-2": "/audio/mango-cheesecake/v2/stage-2/chew-2.mp3",
+      "finish": "/audio/mango-cheesecake/v2/stage-2/finish.mp3"
+    },
+    {
+      "bite": "/audio/mango-cheesecake/v2/stage-3/bite.mp3",
+      "chew-1": "/audio/mango-cheesecake/v2/stage-3/chew-1.mp3",
+      "chew-2": "/audio/mango-cheesecake/v2/stage-3/chew-2.mp3",
+      "finish": "/audio/mango-cheesecake/v2/stage-3/finish.mp3"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import assetCatalog from '../../assets/catalog.json';
+import eatingAudio from './eating-audio.json';
 
 function assetStages(id: string): FoodStage[] {
   const food = assetCatalog.foods.find(item => item.id === id);
@@ -82,7 +83,7 @@ export interface FoodDefinition {
   readonly sound: FoodSound;
 }
 
-export const foods: readonly FoodDefinition[] = [
+const foodDefinitions: readonly FoodDefinition[] = [
   {
     id: 'crispy-chicken',
     name: '黄金炸鸡腿',
@@ -212,6 +213,26 @@ export const foods: readonly FoodDefinition[] = [
     },
   },
 ];
+
+// Distinct recorded takes carry the texture. Keep additional stage EQ subtle so
+// a smaller serving of fries still sounds like fries, rather than mashed potato.
+export const foods: readonly FoodDefinition[] = foodDefinitions.map(food => {
+  const takes = eatingAudio[food.id as keyof typeof eatingAudio];
+  if (!takes) return food; // Soda retains its dedicated full/dry straw recordings.
+  const stageSounds = takes.map((take, index) => {
+    const previous = food.sound.stages?.[index]?.tint;
+    return {
+      bite: take.bite, chews: [take['chew-1'], take['chew-2']], finish: take.finish,
+      tint: {
+        brightness: (previous?.brightness ?? 0) * 0.25,
+        weight: (previous?.weight ?? 0) * 0.25,
+        rate: 1 + ((previous?.rate ?? 1) - 1) * 0.2,
+      },
+    };
+  });
+  return { ...food, sound: { ...food.sound, ...stageSounds[0], stages: stageSounds,
+    level: food.id === 'rosemary-fries' ? 0.44 : food.sound.level } };
+});
 
 export function foodById(id: string): FoodDefinition {
   const food = foods.find(item => item.id === id);
