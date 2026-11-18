@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.browser-profile/
+test-results/
+playwright-report/
+shots/
+.DS_Store
